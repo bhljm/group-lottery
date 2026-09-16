@@ -1,0 +1,1853 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>群組名單抽籤機 v1.2.2</title>
+<style>
+  :root{
+    --bg:#f2f4f8;--card:#fff;--text:#0f172a;--muted:#6b7280;
+    --primary:#2563eb;--accent:#0ea5e9;--danger:#fb7185;
+    --shadow:0 8px 22px rgba(2,6,23,.08);--radius:18px;
+  }
+  html,body{height:100%}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Ubuntu,"Noto Sans TC","Microsoft JhengHei",Arial,sans-serif;
+    padding:18px;line-height:1.6}
+  h1{margin:0 auto 10px;text-align:center;font-weight:900;
+    font-size:clamp(22px,3.2vw,34px);letter-spacing:.02em}
+  .sub{max-width:1100px;margin:0 auto 14px;text-align:center;color:#0a7d17;font-weight:800}
+  .wrap{max-width:1100px;margin:0 auto}
+
+  .toolbar{
+    background:var(--card);border-radius:14px;box-shadow:var(--shadow);
+    padding:14px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center
+  }
+  .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;width:100%}
+  label{font-weight:800;color:#334155;font-size:.95rem}
+  input[type=text],input[type=number]{
+    padding:10px 12px;border:2px solid #e5e7eb;border-radius:10px;
+    font-size:1rem;background:#fff;transition:.2s;
+  }
+  input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 4px rgba(37,99,235,.14)}
+  input[type=text]{width:min(560px,92vw)}
+  input[type=number]{width:110px}
+  .btn{
+    border:none;border-radius:10px;padding:10px 16px;font-weight:900;color:#fff;cursor:pointer;transition:.18s;
+  }
+  .btn:hover{transform:translateY(-1px);filter:brightness(1.05)}
+  .btn:disabled{opacity:.55;cursor:not-allowed;transform:none;filter:none}
+  .btn-primary{background:var(--primary)}
+  .btn-accent{background:var(--accent)}
+  .btn-ghost{background:#111827}
+  .btn-danger{background:var(--danger)}
+  .btn-gray{background:#64748b}
+  .tiny{font-size:.86rem;color:var(--muted);font-weight:700}
+  .warn{color:#b91c1c;font-weight:900;text-align:center;min-height:22px;margin:10px 0}
+
+  .grid{
+    margin-top:14px;
+    display:grid;grid-template-columns:1.25fr .75fr;gap:14px;
+  }
+  @media (max-width:900px){.grid{grid-template-columns:1fr}}
+
+  .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px}
+  .cardTitle{font-weight:1000;font-size:1.05rem;margin:0 0 10px}
+
+  /* Group list */
+  .groupBox{display:flex;flex-direction:column;gap:10px}
+  .groupTools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:flex-start}
+  .groupList{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+  .gItem{
+    border:2px solid #e5e7eb;border-radius:14px;padding:10px;background:#fff;
+    display:flex;gap:10px;align-items:flex-start
+  }
+  .gItem:hover{border-color:#cbd5e1}
+  .gItem input{width:18px;height:18px;margin-top:2px}
+  .gMeta{display:flex;flex-direction:column;gap:2px}
+  .gName{font-weight:1000}
+  .gCount{color:var(--muted);font-weight:800;font-size:.9rem}
+
+  /* Slot */
+  .slotWrap{display:flex;flex-direction:column;gap:12px;align-items:center}
+  .slot{
+    width:min(620px,96%);height:150px;border-radius:20px;box-shadow:var(--shadow);
+    display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;
+    background:linear-gradient(180deg,#ffffff,#f8fafc);
+    border:2px solid #e5e7eb;
+  }
+  .slot::before{content:"";position:absolute;inset:0;opacity:.06;background:#0f172a}
+  .nameBig{
+    position:relative;font-weight:1000;text-align:center;
+    font-size:clamp(34px,5.8vw,68px);
+    padding:0 18px;
+  }
+  .nameSub{
+    margin-top:-6px;
+    font-weight:900;color:var(--muted);text-align:center;
+    font-size:clamp(13px,2.2vw,16px)
+  }
+  .rolling{animation:roll .26s ease-in-out infinite}
+  @keyframes roll{
+    0%{transform:translateY(-70%);opacity:.25}
+    50%{transform:translateY(0);opacity:1}
+    100%{transform:translateY(70%);opacity:.25}
+  }
+  .actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center}
+  .pill{
+    display:inline-flex;gap:8px;align-items:center;
+    background:#eef2ff;color:#1e3a8a;border-radius:999px;padding:8px 12px;
+    font-weight:1000
+  }
+  .check{display:inline-flex;gap:8px;align-items:center;font-weight:900;color:#334155}
+  .check input{width:18px;height:18px}
+
+  /* History */
+  .batches{display:flex;flex-direction:column;gap:10px}
+  .batch{
+    border:2px solid #e5e7eb;border-radius:14px;padding:12px;background:#fff;
+  }
+  .batchHead{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+  .batchTitle{font-weight:1000}
+  .batchTime{color:var(--muted);font-weight:800;font-size:.9rem}
+  .batchList{margin:10px 0 0;padding:0 0 0 18px}
+  .batchList li{margin:6px 0;font-weight:900}
+  .muted{color:var(--muted);font-weight:800}
+
+  /* Modal */
+  .backdrop{position:fixed;inset:0;background:rgba(15,23,42,.55);display:none;
+    align-items:center;justify-content:center;padding:18px;z-index:10001}
+  .backdrop.show{display:flex;animation:fadeIn .18s ease both}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  .modal{width:min(560px,96vw);background:#fff;border-radius:18px;box-shadow:0 18px 50px rgba(2,6,23,.25);
+    overflow:hidden;animation:pop .28s cubic-bezier(.2,.9,.2,1) both}
+  @keyframes pop{
+    0%{transform:translateY(18px) scale(.96);opacity:0}
+    60%{transform:translateY(0) scale(1.02);opacity:1}
+    100%{transform:translateY(0) scale(1);opacity:1}
+  }
+  .mHead{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #e5e7eb}
+  .mTitle{font-weight:1000}
+  .mClose{border:none;background:#f3f4f6;border-radius:10px;padding:8px 10px;font-weight:1000;cursor:pointer}
+  .mBody{padding:16px}
+  .mBig{font-weight:1000;font-size:clamp(22px,5vw,34px);text-align:center;margin:4px 0 10px}
+  .mSub{color:var(--muted);font-weight:900;text-align:center;margin-bottom:8px}
+  .mList .row{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid #e5e7eb;border-radius:12px;margin:10px 0}
+  .mList .idx{min-width:34px;height:28px;border-radius:999px;background:#eef2ff;color:#1e3a8a;font-weight:1000;display:flex;align-items:center;justify-content:center}
+  .mList .txt{
+  font-weight:1000;
+  word-break:break-word;
+  font-size:clamp(18px, 3.4vw, 26px);
+  line-height:1.35;
+}
+.mList .idx{
+  min-width:40px;
+  height:34px;
+  font-size:18px;
+}
+
+  /* Confetti canvas */
+  #confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;display:none;z-index:9999}
+
+  /* Print */
+  .printHeader{display:none}
+  @media print{
+  body{background:#fff;padding:0}
+
+  /* 不要把 grid 隱藏，否則紀錄也會一起不見 */
+  .toolbar,.warn,.sub,#confetti,.backdrop{display:none!important}
+
+  /* 印出來改成單欄 */
+  .wrap{max-width:1100px}
+  .grid{grid-template-columns:1fr !important}
+
+  /* 右側「群組」卡片不要印 */
+  .grid > .card:last-child{display:none!important}
+
+  /* 抽籤吃角子老虎區與操作列不要印，只印紀錄 */
+  .slotWrap,.actions{display:none!important}
+
+  .printHeader{
+    display:block;
+    max-width:1100px;
+    margin:18px auto 6px;
+    padding:0 16px;
+    font-weight:1000;
+    font-size:20px
+  }
+  .card{box-shadow:none;border-radius:0}
+  .batch{border:1px solid #e5e7eb;border-radius:0}
+}
+
+/* ===== v1.1 UI：極簡控制區 + Mobile App Layout ===== */
+  .appStatus{
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    min-height:26px;margin:0 auto 12px;color:#0a7d17;font-weight:850;
+    font-size:.92rem
+  }
+  .toolbar{padding:12px 14px}
+  .primaryActions{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;width:100%}
+  .primaryActions .btnDrawMain{min-width:150px;font-size:1.05rem;padding:12px 24px}
+  .secondaryActions{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap}
+  .setupDetails{width:100%;border-top:1px solid #e5e7eb;margin-top:2px;padding-top:2px}
+  .setupDetails summary{
+    list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+    padding:9px 10px;font-weight:900;color:#475569;user-select:none
+  }
+  .setupDetails summary::-webkit-details-marker{display:none}
+  .setupDetails summary::before{content:'⚙';font-size:1rem}
+  .setupDetails[open] summary{color:var(--primary)}
+  .setupPanel{padding:8px 0 2px;display:flex;flex-direction:column;gap:10px}
+  .setupPanel .row{justify-content:center}
+  .dangerRow{display:flex;justify-content:center;padding-top:2px}
+  .helperText{text-align:center}
+
+  @media (max-width:600px){
+    html{background:#eef2f7}
+    body{
+      padding:0 0 calc(92px + env(safe-area-inset-bottom));
+      background:#eef2f7;line-height:1.45;-webkit-tap-highlight-color:transparent
+    }
+    h1{
+      position:sticky;top:0;z-index:50;background:rgba(248,250,252,.94);
+      backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+      margin:0;padding:14px 16px 6px;font-size:23px;border-bottom:1px solid rgba(226,232,240,.75)
+    }
+    .sub,.appStatus{margin:0;padding:4px 14px 10px;background:rgba(248,250,252,.94);font-size:.82rem}
+    .wrap{width:100%;max-width:none}
+    .toolbar{
+      margin:10px 10px 0;padding:10px;border-radius:18px;box-shadow:0 6px 20px rgba(15,23,42,.08)
+    }
+    .primaryActions{
+      position:fixed;left:0;right:0;bottom:0;z-index:9000;
+      padding:10px 12px calc(10px + env(safe-area-inset-bottom));
+      background:rgba(255,255,255,.96);border-top:1px solid #e2e8f0;
+      box-shadow:0 -8px 24px rgba(15,23,42,.10);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+      display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px
+    }
+    .primaryActions .btn{min-height:48px;padding:10px 12px;border-radius:14px}
+    .primaryActions .btnDrawMain{min-width:0;font-size:1.08rem;padding:12px 16px}
+    .primaryActions #btnPrint{display:none}
+    .setupDetails{border-top:0;margin:0;padding:0}
+    .setupDetails summary{
+      background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px
+    }
+    .setupPanel{padding-top:10px}
+    .setupPanel .row{display:grid;grid-template-columns:1fr;gap:8px;text-align:left}
+    .setupPanel label{font-size:.88rem}
+    input[type=text],input[type=number]{box-sizing:border-box;width:100%;min-height:46px;font-size:16px}
+    .setupPanel #btnLoad{width:100%;min-height:46px}
+    .secondaryActions{display:grid;grid-template-columns:1fr 1fr;width:100%;gap:8px}
+    .secondaryActions .check{
+      min-height:44px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:0 10px;justify-content:flex-start
+    }
+    .secondaryActions .pickControl{grid-column:1/-1;display:grid;grid-template-columns:auto 1fr;align-items:center;gap:8px}
+    .dangerRow .btn{width:100%;min-height:44px}
+    .helperText{display:none}
+    .warn{margin:8px 14px 0;font-size:.88rem;min-height:0}
+    .grid{margin:10px;display:flex;flex-direction:column;gap:10px}
+    .card{padding:12px;border-radius:18px;box-shadow:0 5px 18px rgba(15,23,42,.07)}
+    .grid > .card:first-child{order:1}
+    .grid > .card:last-child{order:0}
+    .cardTitle{font-size:1rem;margin-bottom:8px}
+    .slot{width:100%;height:180px;border-radius:18px}
+    .nameBig{font-size:clamp(42px,14vw,66px)}
+    .nameSub{font-size:14px;padding:0 8px}
+    .actions{width:100%}
+    .pill{padding:7px 11px;font-size:.9rem}
+    .groupTools{display:grid;grid-template-columns:repeat(3,1fr);width:100%;gap:7px}
+    .groupTools .btn{padding:9px 6px;min-height:42px}
+    .groupList{grid-template-columns:1fr 1fr;gap:8px}
+    .gItem{padding:10px 9px;border-radius:13px;min-height:48px}
+    .gName{font-size:.94rem}.gCount{font-size:.8rem}
+    .batch{padding:10px;border-radius:13px}.batchTime{font-size:.78rem}
+    .batchList{padding-left:22px}.batchList li{font-size:.95rem}
+    .backdrop{padding:12px;align-items:flex-end}
+    .modal{width:100%;max-height:82vh;border-radius:22px 22px 14px 14px;overflow:auto}
+    .mHead{position:sticky;top:0;background:#fff;z-index:2;padding:14px}
+    .mTitle{font-size:1.08rem}.mBody{padding:12px}
+    .mList .row{padding:12px 10px;margin:8px 0}
+    .mList .txt{font-size:clamp(20px,6vw,28px)}
+    .mClose,.mBody #btnOk{min-height:44px}
+  }
+
+/* ===== Presenter Mode ===== */
+body.presenter .toolbar{ display:none; }
+body.presenter .grid{ grid-template-columns: 1fr; }
+body.presenter .grid > .card:nth-child(2){ display:none; } /* 右側群組卡隱藏 */
+
+body.presenter .slotWrap{
+  padding: 18px 0 6px;
+}
+
+body.presenter .slot{
+  min-height: 62vh;
+  border-radius: 28px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.25);
+}
+
+body.presenter .nameBig{
+  font-size: clamp(52px, 7vw, 110px);
+  letter-spacing: 0.02em;
+}
+
+body.presenter .nameSub{
+  font-size: clamp(18px, 2vw, 28px);
+  opacity: .9;
+}
+
+body.presenter #batches{
+  max-height: 26vh;
+  overflow:auto;
+}
+
+/* NEW: 主持人模式浮動控制列 */
+.presenterBar{
+  display:none;               /* 平常不顯示 */
+  position:fixed;
+  left:50%;
+  bottom:18px;
+  transform:translateX(-50%);
+  gap:10px;
+  padding:10px 12px;
+  border-radius:16px;
+  background:rgba(255,255,255,.92);
+  box-shadow:0 14px 40px rgba(2,6,23,.25);
+  z-index:10002;              /* 要比 modal/backdrop 還高 */
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display:none;
+  align-items:center;
+  justify-content:center;
+}
+
+body.presenter .presenterBar{ display:flex; }
+
+
+  /* v1.2：一次抽人數欄位（電腦版避免數字被瀏覽器箭頭遮住） */
+  #pickCount{
+    width:80px;
+    min-width:80px;
+    text-align:center;
+    font-weight:800;
+    font-size:16px;
+    box-sizing:border-box;
+  }
+
+  /* v1.2：個資安全登入 */
+  .securityBox{
+    display:grid;
+    grid-template-columns:auto minmax(180px,260px) auto;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    padding:10px 12px;
+    margin-bottom:10px;
+    border:1px solid #dbe4f0;
+    border-radius:14px;
+    background:#f8fafc;
+  }
+  .securityBox label{font-weight:800;color:#334155}
+  .securityBox input{
+    width:100%;
+    min-width:0;
+    padding:10px 12px;
+    border:1px solid #cbd5e1;
+    border-radius:10px;
+    font-size:16px;
+  }
+  .securityState{font-size:13px;font-weight:800;color:#64748b}
+  .securityState.ok{color:#15803d}
+  .securityState.bad{color:#b91c1c}
+
+  @media (max-width:700px){
+    .securityBox{grid-template-columns:1fr;align-items:stretch}
+    .securityBox label{text-align:left}
+    .securityBox .btn{width:100%;min-height:46px}
+    #pickCount{width:100%;min-width:0}
+  }
+
+
+/* ===== v1.2.2 自適應 / Mobile App UI 精修 ===== */
+.appHeader{
+  max-width:1100px;margin:0 auto 8px;
+  display:flex;align-items:center;justify-content:center;
+}
+.appTitle{
+  font-weight:1000;font-size:clamp(23px,3.2vw,34px);
+  letter-spacing:.02em;text-align:center;
+}
+.versionBadge{
+  display:inline-flex;vertical-align:middle;align-items:center;
+  padding:2px 8px;margin-left:6px;border-radius:999px;
+  background:#e0e7ff;color:#3730a3;font-size:.68em;font-weight:900;
+}
+
+/* 電腦：控制區更像工具列，主操作與設定清楚分層 */
+.toolbar{border:1px solid #e7ebf2}
+.primaryActions{min-height:48px}
+.primaryActions .btn{min-height:44px}
+.setupDetails summary{border-radius:10px}
+.setupDetails summary:hover{background:#f8fafc}
+.securityBox{grid-template-columns:auto minmax(220px,300px) auto auto}
+.securityState{grid-column:auto;white-space:nowrap}
+#pickCount{width:88px;min-width:88px}
+
+/* 平板：保留舒適單欄，但不做手機底部列 */
+@media (min-width:601px) and (max-width:900px){
+  body{padding:16px}
+  .wrap,.appHeader{max-width:760px}
+  .grid{grid-template-columns:1fr}
+  .slot{width:min(680px,100%);height:180px}
+  .groupList{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .securityBox{grid-template-columns:auto minmax(220px,1fr) auto}
+  .securityState{grid-column:1/-1;text-align:center}
+}
+
+/* 手機：真正 App 化，而不是單純縮小桌面版 */
+@media (max-width:600px){
+  :root{--radius:20px}
+  html{background:#eef2f7}
+  body{
+    min-height:100dvh;
+    padding:0 0 calc(86px + env(safe-area-inset-bottom));
+    overflow-x:hidden;
+  }
+
+  /* App Bar */
+  .appHeader{
+    position:sticky;top:0;z-index:80;
+    max-width:none;margin:0;
+    min-height:56px;padding:0 14px;
+    background:rgba(248,250,252,.96);
+    border-bottom:1px solid #e2e8f0;
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  }
+  .appTitle{font-size:20px;line-height:1.2}
+  .versionBadge{font-size:11px;padding:2px 6px;margin-left:4px}
+
+  /* 狀態訊息變成 App Bar 下的小狀態，不搶畫面 */
+  #diag.sub{
+    position:sticky;top:56px;z-index:70;
+    min-height:20px;margin:0;padding:5px 14px 7px;
+    background:rgba(248,250,252,.96);
+    border-bottom:1px solid rgba(226,232,240,.7);
+    font-size:12px;line-height:1.25;
+  }
+
+  .wrap{width:100%;max-width:none}
+  .toolbar{
+    margin:10px 10px 0;padding:10px;
+    border-radius:18px;border:1px solid #e2e8f0;
+    box-shadow:0 5px 18px rgba(15,23,42,.06);
+  }
+
+  /* 手機上設定預設像一張可展開的設定卡 */
+  .setupDetails summary{
+    min-height:44px;box-sizing:border-box;
+    justify-content:space-between;
+    background:#f8fafc;border:1px solid #e2e8f0;
+    border-radius:13px;padding:10px 12px;
+  }
+  .setupDetails summary::after{
+    content:'展開';font-size:12px;color:#64748b;font-weight:800
+  }
+  .setupDetails[open] summary::after{content:'收合'}
+  .setupPanel{gap:9px;padding-top:9px}
+
+  /* 安全驗證：手機改成清楚的卡片式流程 */
+  .securityBox{
+    grid-template-columns:1fr;
+    gap:7px;padding:11px;border-radius:14px;
+    background:#f8fafc;
+  }
+  .securityBox label{font-size:13px}
+  .securityBox input{min-height:46px;box-sizing:border-box}
+  .securityBox .btn{min-height:46px;border-radius:12px}
+  .securityState{
+    white-space:normal;text-align:left;line-height:1.35;
+    padding:2px 2px 0;font-size:12px
+  }
+
+  .setupPanel .row{
+    display:grid;grid-template-columns:1fr;
+    gap:7px;text-align:left
+  }
+  .setupPanel label{font-size:13px}
+  input[type=text],input[type=number]{
+    width:100%;min-height:46px;box-sizing:border-box;
+    font-size:16px;border-width:1.5px
+  }
+  .setupPanel #btnLoad{width:100%;min-height:46px;border-radius:12px}
+
+  /* 設定開關：兩張觸控卡 + 一次抽一整列 */
+  .secondaryActions{
+    display:grid;grid-template-columns:1fr 1fr;
+    width:100%;gap:8px
+  }
+  .secondaryActions #stat{
+    grid-column:1/-1;justify-content:center;
+    min-height:38px;box-sizing:border-box
+  }
+  .secondaryActions .check{
+    min-height:48px;box-sizing:border-box;
+    background:#fff;border:1px solid #e2e8f0;
+    border-radius:13px;padding:0 11px;justify-content:flex-start
+  }
+  .secondaryActions .check input[type=checkbox]{
+    width:22px;height:22px;flex:0 0 auto
+  }
+  .secondaryActions .pickControl{
+    grid-column:1/-1;
+    display:grid;grid-template-columns:auto minmax(0,1fr);
+    align-items:center;gap:10px
+  }
+  #pickCount{width:100%;min-width:0;text-align:center}
+  .dangerRow .btn{
+    width:100%;min-height:44px;border-radius:12px;
+    background:#fff;color:#be123c;border:1px solid #fecdd3
+  }
+
+  /* 內容卡片 */
+  .grid{
+    margin:10px;display:flex;flex-direction:column;gap:10px
+  }
+  .card{
+    padding:12px;border-radius:20px;border:1px solid #e7ebf2;
+    box-shadow:0 5px 18px rgba(15,23,42,.055)
+  }
+  /* 手機先選群組，再看到抽籤舞台；底部抽籤鍵永遠可觸及 */
+  .grid > .card:last-child{order:0}
+  .grid > .card:first-child{order:1}
+  .cardTitle{font-size:16px;margin-bottom:9px}
+
+  /* 群組：大觸控區，窄手機自動一欄 */
+  .groupTools{
+    display:grid;grid-template-columns:repeat(3,1fr);
+    width:100%;gap:7px
+  }
+  .groupTools .btn{
+    min-height:42px;padding:8px 4px;border-radius:12px
+  }
+  .groupList{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .gItem{
+    min-width:0;min-height:54px;padding:9px;
+    border-width:1.5px;border-radius:14px;
+    align-items:center
+  }
+  .gItem input{width:22px;height:22px;flex:0 0 auto;margin:0}
+  .gMeta{min-width:0}
+  .gName{font-size:14px;line-height:1.25;word-break:break-word}
+  .gCount{font-size:12px}
+
+  /* 抽籤舞台：手機第一視覺焦點 */
+  .slotWrap{gap:10px}
+  .slot{
+    width:100%;height:190px;box-sizing:border-box;
+    border-radius:20px;border-width:1.5px;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 10px 26px rgba(15,23,42,.08)
+  }
+  .nameBig{font-size:clamp(44px,15vw,68px);line-height:1.1}
+  .nameSub{font-size:13px;line-height:1.35;padding:0 10px}
+  .actions{width:100%}
+  #poolInfo{font-size:13px;padding:7px 11px}
+
+  /* 抽籤紀錄更像 App 清單 */
+  .batches{gap:8px}
+  .batch{padding:10px 11px;border-width:1px;border-radius:14px}
+  .batchHead{gap:5px}
+  .batchTitle{font-size:14px}
+  .batchTime{font-size:11px}
+  .batchList{margin-top:7px}
+  .batchList li{font-size:14px;margin:4px 0}
+
+  /* Bottom Action Bar：抽籤永遠在拇指範圍 */
+  .primaryActions{
+    position:fixed;left:0;right:0;bottom:0;z-index:9000;
+    display:grid;grid-template-columns:minmax(0,1fr) auto;
+    gap:8px;padding:9px 10px calc(9px + env(safe-area-inset-bottom));
+    background:rgba(255,255,255,.97);
+    border-top:1px solid #e2e8f0;
+    box-shadow:0 -8px 24px rgba(15,23,42,.10);
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)
+  }
+  .primaryActions .btn{
+    min-height:50px;border-radius:15px;padding:10px 12px
+  }
+  .primaryActions .btnDrawMain{
+    min-width:0;font-size:18px;letter-spacing:.08em
+  }
+  .primaryActions #btnPresenter{font-size:13px;white-space:nowrap}
+  .primaryActions #btnPrint{display:none}
+
+  /* 結果視窗：手機 bottom sheet */
+  .backdrop{padding:10px;align-items:flex-end}
+  .modal{
+    width:100%;max-height:84dvh;
+    border-radius:24px 24px 16px 16px;overflow:auto
+  }
+  .mHead{
+    position:sticky;top:0;z-index:2;background:#fff;
+    padding:14px 14px 12px
+  }
+  .mTitle{font-size:17px}
+  .mBody{padding:10px 12px 14px}
+  .mList .row{padding:12px 10px;margin:8px 0;border-radius:14px}
+  .mList .txt{font-size:clamp(20px,6.2vw,28px)}
+  .mClose,.mBody #btnOk{min-height:46px}
+
+  /* 手機主持人模式：避免一般 bottom bar 干擾 */
+  body.presenter{padding-bottom:0}
+  body.presenter .appHeader,
+  body.presenter #diag{display:none}
+  body.presenter .grid{margin:0}
+  body.presenter .grid > .card:first-child{
+    border:0;border-radius:0;min-height:100dvh;padding:12px;
+    display:flex;flex-direction:column;justify-content:center
+  }
+  body.presenter .slot{min-height:58dvh}
+  body.presenter .nameBig{font-size:clamp(56px,18vw,100px)}
+  body.presenter #batches{max-height:22dvh}
+  body.presenter .presenterBar{
+    left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom));
+    transform:none;width:auto;box-sizing:border-box
+  }
+  body.presenter .presenterBar .btn{min-height:50px}
+  body.presenter #btnDrawP{flex:1;font-size:18px}
+  body.presenter #btnExitP{font-size:13px}
+}
+
+/* 超窄手機：群組改單欄，避免文字擠壓 */
+@media (max-width:380px){
+  .groupList{grid-template-columns:1fr}
+  .primaryActions{grid-template-columns:minmax(0,1fr) auto}
+  .primaryActions #btnPresenter{padding-left:9px;padding-right:9px}
+}
+
+/* 橫向手機：降低高度浪費 */
+@media (max-height:520px) and (orientation:landscape){
+  .appHeader{position:static;min-height:46px}
+  #diag.sub{position:static}
+  .slot{height:140px}
+  body.presenter .slot{min-height:52vh}
+  body.presenter #batches{display:none}
+}
+
+
+/* ===== v1.2.2 專業 App 操作精修 ===== */
+
+/* 群組收合卡 */
+.groupCard{padding:0;overflow:hidden}
+.groupDetails{width:100%}
+.groupDetails summary{
+  list-style:none;cursor:pointer;user-select:none;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:16px 18px;font-weight:1000;
+}
+.groupDetails summary::-webkit-details-marker{display:none}
+.groupDetails summary::after{
+  content:'⌄';font-size:22px;line-height:1;color:#64748b;
+  transition:transform .2s ease;
+}
+.groupDetails[open] summary::after{transform:rotate(180deg)}
+.groupSummaryTitle{font-size:18px;color:var(--text)}
+.groupSummaryMeta{
+  margin-left:auto;font-size:12px;font-weight:800;color:#64748b;
+  white-space:nowrap
+}
+.groupDetails .groupBox{padding:0 18px 18px}
+.groupDetails[open] summary{border-bottom:1px solid #eef2f7;margin-bottom:14px}
+
+/* 清除紀錄確認視窗 */
+.confirmBackdrop{
+  position:fixed;inset:0;z-index:12000;
+  display:none;align-items:center;justify-content:center;
+  padding:18px;background:rgba(15,23,42,.48);
+  backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px)
+}
+.confirmBackdrop.show{display:flex}
+.confirmDialog{
+  width:min(420px,100%);box-sizing:border-box;
+  background:#fff;border:1px solid #e2e8f0;border-radius:24px;
+  padding:24px;box-shadow:0 24px 70px rgba(15,23,42,.24);
+  text-align:center
+}
+.confirmIcon{
+  width:52px;height:52px;margin:0 auto 12px;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:50%;background:#fff1f2;color:#e11d48;
+  font-size:28px;font-weight:1000
+}
+.confirmTitle{font-size:21px;font-weight:1000;color:#0f172a}
+.confirmText{
+  margin:9px auto 18px;max-width:330px;
+  color:#64748b;font-size:14px;line-height:1.6
+}
+.confirmActions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.confirmActions .btn{min-height:46px;border-radius:13px}
+
+/* 清除紀錄按鈕維持明確的危險操作視覺 */
+.btnClearMain{
+  background:#e11d48;color:#fff;border-color:#e11d48
+}
+.btnClearMain:hover{filter:brightness(.97)}
+
+@media (max-width:600px){
+  /* 群組收合：手機版更像原生設定卡 */
+  .groupCard{padding:0}
+  .groupDetails summary{
+    min-height:58px;box-sizing:border-box;
+    padding:13px 15px
+  }
+  .groupSummaryTitle{font-size:16px}
+  .groupSummaryMeta{font-size:11px}
+  .groupDetails .groupBox{padding:0 12px 14px}
+  .groupDetails[open] summary{margin-bottom:12px}
+
+  /*
+    Bottom Action Bar:
+    三個操作全部限制在 viewport 內。
+    抽籤最大、主持人其次、清除紀錄最精簡。
+  */
+  .primaryActions{
+    box-sizing:border-box;
+    width:100vw;max-width:100vw;
+    grid-template-columns:minmax(0,1.45fr) minmax(0,1fr) minmax(0,.82fr);
+    gap:6px;
+    padding-left:max(8px,env(safe-area-inset-left));
+    padding-right:max(8px,env(safe-area-inset-right));
+  }
+  .primaryActions .btn{
+    width:100%;min-width:0;max-width:100%;
+    padding:9px 5px;
+    overflow:hidden;text-overflow:ellipsis;
+  }
+  .primaryActions .btnDrawMain{
+    font-size:17px;letter-spacing:.06em
+  }
+  .primaryActions #btnPresenter{
+    font-size:12.5px;white-space:nowrap
+  }
+  .primaryActions #btnReset{
+    font-size:12.5px;white-space:nowrap
+  }
+
+  /* 手機確認視窗改為底部 action sheet */
+  .confirmBackdrop{
+    align-items:flex-end;padding:10px;
+    padding-bottom:max(10px,env(safe-area-inset-bottom))
+  }
+  .confirmDialog{
+    width:100%;border-radius:24px;
+    padding:20px 16px 16px
+  }
+  .confirmIcon{width:48px;height:48px;font-size:25px}
+  .confirmTitle{font-size:19px}
+  .confirmText{font-size:13px;margin-bottom:16px}
+  .confirmActions .btn{min-height:48px}
+
+  /* 設定區原本的 dangerRow 不再占位 */
+  .dangerRow{display:none}
+}
+
+@media (max-width:390px){
+  .primaryActions{
+    grid-template-columns:minmax(0,1.25fr) minmax(0,.92fr) minmax(0,.78fr);
+    gap:5px
+  }
+  .primaryActions .btnDrawMain{font-size:16px}
+  .primaryActions #btnPresenter,
+  .primaryActions #btnReset{font-size:11.5px;padding-left:3px;padding-right:3px}
+}
+
+@media (max-width:340px){
+  .primaryActions #btnPresenter{font-size:10.5px}
+  .primaryActions #btnReset{font-size:10.5px}
+}
+
+</style>
+</head>
+<body>
+  <header class="appHeader"><div class="appTitle">群組名單抽籤機 <span class="versionBadge">v1.2.2</span></div></header>
+  <div id="diag" class="sub">初始化中…</div>
+
+  <div class="wrap">
+    <div class="toolbar" role="region" aria-label="控制列">
+      <div class="primaryActions">
+        <button id="btnDraw" class="btn btn-accent btnDrawMain">抽籤</button>
+        <button id="btnPresenter" class="btn btn-gray" type="button">主持人模式</button>
+        <button id="btnReset" class="btn btn-danger btnClearMain" type="button">清除紀錄</button>
+        <button id="btnPrint" class="btn btn-ghost">列印</button>
+      </div>
+
+      <details id="setupDetails" class="setupDetails">
+        <summary>名單與抽籤設定</summary>
+        <div class="setupPanel">
+          <div class="securityBox" aria-label="名單存取驗證">
+            <label for="accessCode">名單存取碼</label>
+            <input id="accessCode" type="password" autocomplete="off" inputmode="text"
+                   placeholder="輸入管理者設定的存取碼" />
+            <button id="btnAuth" class="btn btn-primary" type="button">驗證</button>
+            <div id="securityState" class="securityState">尚未驗證；驗證成功後才可讀取名單。</div>
+          </div>
+
+          <div class="row">
+            <label for="sheetId">試算表 ID</label>
+            <input id="sheetId" type="text" placeholder="貼上 Google 試算表 ID（網址中 /d/ 後面那串）" spellcheck="false" />
+            <button id="btnLoad" class="btn btn-primary">更新名單</button>
+          </div>
+
+          <div class="secondaryActions">
+            <span class="pill" id="stat">未載入</span>
+            <label class="check" title="抽過的人會移出抽籤池，直到你重置">
+              <input id="noRepeat" type="checkbox" checked /> 不重複
+            </label>
+            <label class="check" title="抽籤時播放捲動音效">
+              <input id="soundOn" type="checkbox" checked /> 音效
+            </label>
+            <label class="check pickControl" for="pickCount"><span>一次抽</span>
+              <input id="pickCount" type="number" min="1" max="10" value="1" />
+            </label>
+          </div>
+
+          <div class="tiny helperText">工作表名稱即為群組；勾選群組後即可加入抽籤池。姓名與抽籤結果不會永久儲存在瀏覽器。</div>
+        </div>
+      </details>
+    </div>
+
+    <div id="warning" class="warn"></div>
+
+    <div class="grid">
+      <!-- Left: Slot + History -->
+      <div class="card">
+        <div class="cardTitle">抽籤</div>
+
+        <div class="slotWrap">
+          <div class="slot" aria-label="吃角子老虎抽籤區">
+            <div>
+              <div id="nameBig" class="nameBig">—</div>
+              <div id="nameSub" class="nameSub">請先更新名單並勾選群組</div>
+            </div>
+          </div>
+
+          <div class="actions">
+  <span class="pill" id="poolInfo">抽籤池：0 人</span>
+
+  <!-- NEW: 主持人模式浮動控制列（只在主持人模式顯示） -->
+  <div id="presenterBar" class="presenterBar" aria-label="主持人控制列">
+    <button id="btnDrawP" class="btn btn-accent" type="button">抽籤</button>
+    <button id="btnExitP" class="btn btn-gray" type="button">回設定（退出主持人模式）</button>
+  </div>
+</div>
+        </div>
+
+        <div style="height:12px"></div>
+
+        <div class="cardTitle">抽籤紀錄</div>
+        <div class="tiny muted">以「第 N 次抽籤」為一筆，下面列出本次抽到的人。</div>
+        <div style="height:8px"></div>
+
+        <div id="printHeader" class="printHeader"></div>
+        <div id="batches" class="batches"></div>
+      </div>
+
+      <!-- Right: Group selector -->
+      <div class="card groupCard">
+        <details id="groupDetails" class="groupDetails" open>
+          <summary>
+            <span class="groupSummaryTitle">群組（工作表）</span>
+            <span id="groupSummaryMeta" class="groupSummaryMeta">點此收合</span>
+          </summary>
+          <div class="groupBox">
+            <div class="groupTools">
+              <button id="btnAll" class="btn btn-gray" type="button">全選</button>
+              <button id="btnNone" class="btn btn-gray" type="button">全不選</button>
+              <button id="btnInvert" class="btn btn-gray" type="button">反選</button>
+            </div>
+            <div id="groupList" class="groupList"></div>
+            <div class="tiny muted">提示：工作表名稱就是群組名稱（例如：主任 / 組長 / 一年級導師）。</div>
+          </div>
+        </details>
+      </div>
+    </div>
+  </div>
+
+  <canvas id="confetti"></canvas>
+
+  <!-- v1.2.2 清除紀錄確認視窗 -->
+  <div id="clearBackdrop" class="confirmBackdrop" aria-hidden="true">
+    <div class="confirmDialog" role="dialog" aria-modal="true" aria-labelledby="clearTitle">
+      <div class="confirmIcon">!</div>
+      <div id="clearTitle" class="confirmTitle">確定要清除紀錄嗎？</div>
+      <div class="confirmText">這會清空目前的抽籤紀錄，並重新建立抽籤池。此動作無法復原。</div>
+      <div class="confirmActions">
+        <button id="btnCancelClear" class="btn btn-gray" type="button">取消</button>
+        <button id="btnConfirmClear" class="btn btn-danger" type="button">確定清除</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Result modal -->
+  <div id="backdrop" class="backdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+      <div class="mHead">
+        <div id="mTitle" class="mTitle">本次抽籤結果</div>
+        <button id="btnClose" class="mClose" aria-label="關閉">✕</button>
+      </div>
+      <div class="mBody">
+        <div id="mList" class="mList"></div>
+        <div style="display:flex;justify-content:center;margin-top:12px">
+          <button id="btnOk" class="btn btn-primary">關閉</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+(function(){
+  'use strict';
+
+  /** =======================
+   * 1) 你只要改這裡：
+   * 把 API_BASE_URL 換成你的 Apps Script Web App URL（/exec）
+   * ======================= */
+  var API_BASE_URL = "https://script.google.com/macros/s/AKfycbzbRJoA937rOBZfI422QZtUmDTicUZm3DwFxdxSfPA5Apm6wN2uOyCCtdJQ7JT6VEE/exec"; // e.g. https://script.google.com/macros/s/xxxxx/exec
+
+  var LS_KEY = 'lottery_groups_v1';
+  var LS_SHEETID = 'lottery_sheetId_v1';
+
+  function $(id){ return document.getElementById(id); }
+  var el = {
+    diag: $('diag'),
+    sheetId: $('sheetId'),
+    btnLoad: $('btnLoad'),
+    warning: $('warning'),
+    stat: $('stat'),
+    groupList: $('groupList'),
+    btnAll: $('btnAll'),
+    btnNone: $('btnNone'),
+    btnInvert: $('btnInvert'),
+    poolInfo: $('poolInfo'),
+    noRepeat: $('noRepeat'),
+    soundOn: $('soundOn'),
+    pickCount: $('pickCount'),
+    accessCode: $('accessCode'),
+    btnAuth: $('btnAuth'),
+    securityState: $('securityState'),
+    btnDraw: $('btnDraw'),
+btnPresenter: $('btnPresenter'),
+
+presenterBar: $('presenterBar'),
+btnDrawP: $('btnDrawP'),
+btnExitP: $('btnExitP'),
+
+btnPrint: $('btnPrint'),
+    btnReset: $('btnReset'),
+    groupDetails: $('groupDetails'),
+    groupSummaryMeta: $('groupSummaryMeta'),
+    clearBackdrop: $('clearBackdrop'),
+    btnCancelClear: $('btnCancelClear'),
+    btnConfirmClear: $('btnConfirmClear'),
+    nameBig: $('nameBig'),
+    nameSub: $('nameSub'),
+    batches: $('batches'),
+    printHeader: $('printHeader'),
+    confetti: $('confetti'),
+    backdrop: $('backdrop'),
+    btnClose: $('btnClose'),
+    btnOk: $('btnOk'),
+    mList: $('mList')
+  };
+
+  // ===== State =====
+  var meta = null;           // {sheets:[{sheetName,count}]...}
+  var dataAll = null;        // {sheets:[{sheetName,rows:[{group,name,title,note,id}]}]}
+  var accessToken = '';       // v1.2：只存在記憶體，不寫入 localStorage
+  var selectedGroups = {};   // {sheetName:true/false}
+  var pool = [];             // merged pool (current)
+  var remaining = [];        // for noRepeat mode (current)
+  var batches = [];          // [{no,time,picks:[{...}]}]
+
+  // ===== Audio (tick) =====
+  var audioCtx = null;
+  function beepTick(mode){
+  if(!el.soundOn.checked) return;
+  mode = mode || 'fast'; // fast | slow
+
+  try{
+    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    var o = audioCtx.createOscillator();
+    var g = audioCtx.createGain();
+
+    if(mode === 'final'){
+  // 最後一跳：低頻、長音、很有「定錨感」
+  o.type = 'sine';
+  o.frequency.value = 520;
+  g.gain.value = 0.06;
+  o.connect(g); g.connect(audioCtx.destination);
+  o.start();
+  setTimeout(function(){ o.stop(); }, 160);
+  return;
+}
+
+if(mode === 'slow'){
+  o.type = 'sine';
+  o.frequency.value = 760;
+  g.gain.value = 0.05;
+}else{
+  o.type = 'square';
+  o.frequency.value = 1150;
+  g.gain.value = 0.03;
+}
+
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start();
+    setTimeout(function(){ o.stop(); }, (mode === 'slow' ? 70 : 30));
+  }catch(e){}
+}
+
+// ===== Cheer sound (result) =====
+// ===== Cheer sound (Fanfare / Winner) =====
+function playCheer(){
+  if(!el.soundOn.checked) return;
+
+  try{
+    if(!audioCtx){
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+
+    var t0 = audioCtx.currentTime;
+
+    /*
+      得獎號角設計理念：
+      - 2 個短音 + 1 個拉長音
+      - 音高往上（上行）
+      - 總長約 0.9 秒，不吵但很有「揭曉感」
+    */
+
+    var notes = [
+      { f: 523, t: 0.00, d: 0.14 }, // C5
+      { f: 659, t: 0.16, d: 0.14 }, // E5
+      { f: 784, t: 0.34, d: 0.55 }  // G5（拉長）
+    ];
+
+    notes.forEach(function(n){
+      var o = audioCtx.createOscillator();
+      var g = audioCtx.createGain();
+
+      o.type = 'sawtooth';          // 比 sine 更有號角感
+      o.frequency.value = n.f;
+
+      // 音量包絡：快速進、自然退
+      g.gain.setValueAtTime(0.001, t0 + n.t);
+      g.gain.linearRampToValueAtTime(0.07, t0 + n.t + 0.04);
+      g.gain.exponentialRampToValueAtTime(0.001, t0 + n.t + n.d);
+
+      o.connect(g);
+      g.connect(audioCtx.destination);
+
+      o.start(t0 + n.t);
+      o.stop(t0 + n.t + n.d + 0.03);
+    });
+
+  }catch(e){}
+}
+
+  // ===== Helpers =====
+  function setDiag(msg, ok){
+    el.diag.textContent = msg;
+    el.diag.style.color = ok ? '#0a7d17' : '#b91c1c';
+  }
+  function warn(msg){ el.warning.textContent = msg || ''; }
+  function nowStamp(){
+    var d=new Date();
+    function pad(n){return (n<10?'0':'')+n;}
+    return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+' '+pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
+  }
+  function escapeHtml(s){
+    s = String(s==null?'':s);
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+            .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+  // JSONP loader
+  function jsonp(url, cbOk, cbFail){
+    var cbName = '__jsonp_cb_' + Date.now() + '_' + Math.floor(Math.random()*1000);
+    var s = document.createElement('script');
+    var timer = null;
+
+    window[cbName] = function(resp){
+      cleanup();
+      cbOk(resp);
+    };
+    function cleanup(){
+      if(timer) clearTimeout(timer);
+      try{ delete window[cbName]; }catch(e){ window[cbName]=undefined; }
+      if(s && s.parentNode) s.parentNode.removeChild(s);
+    }
+    timer = setTimeout(function(){
+      cleanup();
+      cbFail(new Error('timeout'));
+    }, 12000);
+
+    s.onerror = function(){
+      cleanup();
+      cbFail(new Error('network'));
+    };
+    s.src = url + (url.indexOf('?')>=0 ? '&' : '?') + 'callback=' + encodeURIComponent(cbName) + '&_=' + Date.now();
+    document.head.appendChild(s);
+  }
+
+  // ===== Render Groups =====
+  function renderGroups(){
+    if(!meta || !meta.sheets){ el.groupList.innerHTML=''; return; }
+
+    var html = '';
+    for(var i=0;i<meta.sheets.length;i++){
+      var g = meta.sheets[i];
+      var name = g.sheetName;
+      var checked = selectedGroups[name] ? 'checked' : '';
+      html += ''
+      + '<label class="gItem">'
+      + '  <input type="checkbox" data-group="'+escapeHtml(name)+'" '+checked+' />'
+      + '  <div class="gMeta">'
+      + '    <div class="gName">'+escapeHtml(name)+'</div>'
+      + '    <div class="gCount">'+(g.count||0)+' 人</div>'
+      + '  </div>'
+      + '</label>';
+    }
+    el.groupList.innerHTML = html;
+
+    // bind
+    var inputs = el.groupList.querySelectorAll('input[type=checkbox][data-group]');
+    for(var k=0;k<inputs.length;k++){
+      inputs[k].addEventListener('change', function(){
+        var gn = this.getAttribute('data-group');
+        selectedGroups[gn] = !!this.checked;
+        rebuildPool();
+        saveState();
+      });
+    }
+  }
+
+  // ===== Build Pool =====
+  function rebuildPool(){
+    pool = [];
+    remaining = [];
+
+    if(!dataAll || !dataAll.sheets){ updatePoolUI(); return; }
+
+    for(var i=0;i<dataAll.sheets.length;i++){
+      var sh = dataAll.sheets[i];
+      if(!selectedGroups[sh.sheetName]) continue;
+      var rows = sh.rows || [];
+      for(var r=0;r<rows.length;r++){
+        pool.push(rows[r]);
+      }
+    }
+
+    remaining = pool.slice(); // for noRepeat
+    updatePoolUI();
+  }
+
+  function updatePoolUI(){
+    el.poolInfo.textContent = '抽籤池：' + (pool.length||0) + ' 人';
+    el.stat.textContent = meta ? ('已載入：' + (meta.total||0) + ' 人｜' + (meta.updatedAt||'')) : '未載入';
+    // draw button
+    el.btnDraw.disabled  = (pool.length===0) || (el.noRepeat.checked && remaining.length===0);
+el.btnDrawP.disabled = el.btnDraw.disabled;
+    el.btnPrint.disabled = (batches.length===0);
+     // === NEW: 抽籤池用完提示 ===
+  var total = pool.length;
+  var left = el.noRepeat.checked ? remaining.length : pool.length;
+
+  if(total === 0){
+    warn('請先更新名單並勾選群組');
+    el.btnDraw.disabled = true;
+    return;
+  }
+
+  // 不重複模式：抽完就會減少 remaining
+  if(el.noRepeat.checked && left === 0){
+    warn('✅ 抽籤池已用完：請按「重置」或取消「不重複」再繼續');
+    el.btnDraw.disabled = true;
+  }else{
+    // 顯示剩餘
+    warn('');
+    el.btnDraw.disabled = false;
+  }
+  }
+
+  // ===== Draw logic (slot) =====
+  function clampPickCount(){
+    var v = parseInt(el.pickCount.value||'1',10);
+    if(isNaN(v)||v<1) v=1;
+    if(v>10) v=10;
+    el.pickCount.value = v;
+    return v;
+  }
+
+  function pickOne(){
+    var noRepeat = !!el.noRepeat.checked;
+    var arr = noRepeat ? remaining : pool;
+    if(arr.length===0) return null;
+
+    var idx;
+    if(window.crypto && window.crypto.getRandomValues){
+      var u=new Uint32Array(1); window.crypto.getRandomValues(u);
+      idx = Math.floor((u[0]/0xFFFFFFFF) * arr.length);
+      if(idx>=arr.length) idx = arr.length-1;
+    }else{
+      idx = Math.floor(Math.random()*arr.length);
+    }
+    var item = arr[idx];
+
+    if(noRepeat){
+      // remove from remaining
+      remaining.splice(idx,1);
+    }
+    return item;
+  }
+
+  function formatPick(item){
+    // display: 姓名（大） + 群組｜職稱（小）
+    var sub = item.group + (item.title ? ('｜' + item.title) : '');
+    return { big: item.name, sub: sub, full: item.name + '（' + sub + '）' };
+  }
+
+  function slotRollPreview(){
+    // show rolling random names quickly
+    if(pool.length===0){
+      el.nameBig.textContent = '—';
+      el.nameSub.textContent = '請先更新名單並勾選群組';
+      return;
+    }
+    var i = Math.floor(Math.random()*pool.length);
+    var it = pool[i];
+    var f = formatPick(it);
+    el.nameBig.innerHTML = '<span class="rolling">'+escapeHtml(f.big)+'</span>';
+    el.nameSub.textContent = f.sub;
+  }
+
+  function drawOnceBatch(){
+    // === NEW: 抽籤前先擋 ===
+  if(pool.length === 0){
+    warn('請先更新名單並勾選群組');
+    return;
+  }
+  if(el.noRepeat.checked && remaining.length === 0){
+    warn('✅ 抽籤池已用完：請按「重置」或取消「不重複」再繼續');
+    return;
+  }
+  warn('');
+  var count = clampPickCount();
+  if(pool.length===0){
+    warn('抽籤池為 0，請先勾選群組。');
+    return;
+  }
+  if(el.noRepeat.checked && remaining.length < count){
+    warn('不重複模式下，剩餘人數不足（剩 ' + remaining.length + ' 人）。請先重置，或關閉「不重複」。');
+    return;
+  }
+
+  // Prepare audio (some browsers need user gesture; this is called by button click so OK)
+  if(el.soundOn.checked){
+    try{
+      if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if(audioCtx.state === 'suspended') audioCtx.resume();
+    }catch(e){}
+  }
+
+  // Roll animation（緊張感：先快後慢）
+  el.btnDraw.disabled = true;
+
+  var totalMs = 1600 + Math.floor(Math.random()*900); // 1600~2500ms
+  var t0 = Date.now();
+
+  function rollingStep(){
+    var t = Date.now();
+    var p = Math.min(1, (t - t0) / totalMs); // 0→1
+
+    slotRollPreview();
+    if(p < 0.45){
+  beepTick('fast');
+}else if(p < 0.80){
+  beepTick('slow');
+}else{
+  beepTick('final');
+}
+
+    // 間隔：前段很快(55ms) → 後段變慢(200ms)
+    var delay;
+if(p < 0.45){
+  // 快段：很快
+  delay = 45 + 30 * p;          // 約 45~58ms
+}else if(p < 0.80){
+  // 慢段：明顯慢
+  var t = (p - 0.45) / 0.35;    // 0~1
+  delay = 90 + 160 * (t*t);     // 約 90~250ms
+}else{
+  // 極慢段（期待感核心，刻意非常慢）
+  var t = (p - 0.80) / 0.20;     // 0~1
+  delay = 420 + 820 * (t*t);     // 🔥 420~1240ms
+}
+    if(p < 1){
+      setTimeout(rollingStep, delay);
+    }else{
+  // 最後刻意停 400ms 再揭曉
+  setTimeout(afterRollStop, 400);
+}
+  }
+  rollingStep();
+
+  function afterRollStop(){
+    // Do actual picks AFTER roll stops
+    var picks = [];
+    for(var i=0;i<count;i++){
+      var it = pickOne();
+      if(!it) break;
+      picks.push(it);
+    }
+
+    // Show final on slot (first pick)
+    if(picks.length>0){
+      var f0 = formatPick(picks[0]);
+      el.nameBig.textContent = f0.big;
+      el.nameSub.textContent = f0.sub;
+    }else{
+      el.nameBig.textContent = '—';
+      el.nameSub.textContent = '（沒有抽到）';
+    }
+
+    // Confetti（略拉長）
+    startConfetti(2200);
+
+    // 🎉 NEW：結果歡呼音效
+playCheer();
+
+    // Save batch
+    var batchNo = batches.length + 1;
+    batches.unshift({
+      no: batchNo,
+      time: nowStamp(),
+      picks: picks
+    });
+
+    renderBatches();
+    updatePoolUI();
+    saveState();
+
+    // Modal
+    openModal(picks, batchNo);
+
+    el.btnDraw.disabled = (pool.length===0);
+    el.btnPrint.disabled = (batches.length===0);
+  }
+}
+
+  // ===== History render =====
+  function renderBatches(){
+    if(!batches.length){
+      el.batches.innerHTML = '<div class="muted">（尚無紀錄）</div>';
+      return;
+    }
+
+    var html = '';
+    for(var i=0;i<batches.length;i++){
+      var b = batches[i];
+      var n = b.picks ? b.picks.length : 0;
+
+      html += '<div class="batch">';
+      html += '  <div class="batchHead">';
+      html += '    <div class="batchTitle">第 ' + b.no + ' 次抽籤（共 ' + n + ' 人）</div>';
+      html += '    <div class="batchTime">' + escapeHtml(b.time||'') + '</div>';
+      html += '  </div>';
+
+      if(n===0){
+        html += '<div class="muted">（本次沒有抽到）</div>';
+      }else{
+        html += '<ol class="batchList">';
+        for(var k=0;k<b.picks.length;k++){
+          var it = b.picks[k];
+          var f = formatPick(it);
+          html += '<li>' + escapeHtml(f.full) + (it.note ? (' <span class="muted">｜' + escapeHtml(it.note) + '</span>') : '') + '</li>';
+        }
+        html += '</ol>';
+      }
+
+      html += '</div>';
+    }
+    el.batches.innerHTML = html;
+  }
+
+  // ===== Modal =====
+  function openModal(picks, batchNo){
+  picks = picks || [];
+
+  // 標題只顯示「第 N 次抽籤結果」
+  var titleEl = document.getElementById('mTitle');
+  if(titleEl) titleEl.textContent = '第 ' + batchNo + ' 次抽籤結果';
+
+  var html = '';
+  for(var i=0;i<picks.length;i++){
+    var f = formatPick(picks[i]);
+    html += '<div class="row"><div class="idx">'+(i+1)+'</div><div class="txt">'+escapeHtml(f.full)+'</div></div>';
+  }
+
+  el.mList.innerHTML = html || '<div class="muted" style="text-align:center;font-weight:1000;font-size:20px">（本次沒有結果）</div>';
+
+  el.backdrop.className = 'backdrop show';
+  el.backdrop.setAttribute('aria-hidden','false');
+}
+  function closeModal(){
+    el.backdrop.className = 'backdrop';
+    el.backdrop.setAttribute('aria-hidden','true');
+  }
+
+  // ===== Confetti (canvas) =====
+  var c = el.confetti, ctx = c.getContext('2d');
+
+function fitConfettiCanvas(){
+  var dpr = Math.max(1, window.devicePixelRatio || 1);
+  c.style.width = '100%';
+  c.style.height = '100%';
+  c.width  = Math.floor(window.innerWidth  * dpr);
+  c.height = Math.floor(window.innerHeight * dpr);
+  // 用 CSS 像素作畫布座標，避免高 DPI 變小/模糊
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+
+function startConfetti(duration){
+  duration = duration || 2200;
+
+  fitConfettiCanvas();
+  c.style.display = 'block';
+
+  var W = window.innerWidth, H = window.innerHeight;
+  var colors = ['#ff4d6d','#ffd166','#06d6a0','#118ab2','#9b5de5','#f15bb5','#00bbf9'];
+  var particles = [];
+  var TAU = Math.PI * 2;
+
+  function rand(a,b){ return Math.random()*(b-a)+a; }
+  function pick(arr){ return arr[(Math.random()*arr.length)|0]; }
+
+  // 大爆發：左右 + 中間
+  function spawnBurst(cx, cy, count, spread, impulse){
+    for(var i=0;i<count;i++){
+      var ang = rand(-spread, spread) + (i%2 ? 0 : Math.PI);
+      var speed = impulse * rand(0.65, 1.15);
+      particles.push({
+        x: cx, y: cy,
+        vx: Math.cos(ang)*speed + rand(-0.6,0.6),
+        vy: Math.sin(ang)*speed + rand(-0.2,0.2),
+        size: rand(6, 14),
+        rot: rand(0, TAU),
+        vr: rand(-0.30, 0.30),
+        life: 1,
+        shape: pick(['rect','rect','tri','circle']),
+        c: pick(colors)
+      });
+    }
+  }
+
+  // 全螢幕覆蓋感關鍵：持續從上方落下彩帶
+  function spawnStreamer(){
+    var x = rand(0, W);
+    for(var i=0;i<4;i++){
+      particles.push({
+        x: x + rand(-28, 28),
+        y: -20,
+        vx: rand(-0.9, 0.9),
+        vy: rand(2.4, 3.9),
+        size: rand(5, 10),
+        rot: rand(0, TAU),
+        vr: rand(-0.22, 0.22),
+        life: 1,
+        shape: pick(['rect','tri']),
+        c: pick(colors)
+      });
+    }
+  }
+
+  spawnBurst(W*0.22, H*0.38, 160, Math.PI/2.1, 6.8);
+  spawnBurst(W*0.78, H*0.38, 160, Math.PI/2.1, 6.8);
+  spawnBurst(W*0.50, H*0.42, 110, Math.PI/2.6, 7.4);
+
+  var t0 = Date.now();
+  var last = Date.now();
+
+  function step(){
+    var t = Date.now();
+    var dt = Math.min(40, t - last); last = t;
+    var k = dt / 16.6667;
+    var elapsed = t - t0;
+
+    // 前段密集落下，後段減少
+    if(elapsed < duration){
+      var density = (elapsed < duration*0.75) ? 0.98 : 0.55;
+      if(Math.random() < density) spawnStreamer();
+    }
+
+    var drag = 0.985, gravity = 0.22, wind = Math.sin(t*0.0025)*0.14;
+
+    ctx.clearRect(0,0,W,H);
+    for(var i=particles.length-1;i>=0;i--){
+      var p = particles[i];
+      p.vx = (p.vx + wind) * drag;
+      p.vy = (p.vy + gravity) * drag;
+      p.x += p.vx * k;
+      p.y += p.vy * k;
+      p.rot += p.vr * k;
+
+      p.life -= (elapsed > duration*0.65 ? 0.012 : 0.0045) * k;
+
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, Math.min(1, p.life));
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot);
+      ctx.fillStyle = p.c;
+
+      if(p.shape === 'circle'){
+        ctx.beginPath();
+        ctx.arc(0, 0, p.size*0.33, 0, TAU);
+        ctx.fill();
+      } else if(p.shape === 'tri'){
+        ctx.beginPath();
+        ctx.moveTo(-p.size*0.4, p.size*0.25);
+        ctx.lineTo(p.size*0.4, p.size*0.25);
+        ctx.lineTo(0, -p.size*0.35);
+        ctx.closePath();
+        ctx.fill();
+      } else {
+        ctx.fillRect(-p.size*0.5, -p.size*0.2, p.size, p.size*0.4);
+      }
+      ctx.restore();
+
+      if(p.y > H + 60 || p.life <= 0) particles.splice(i, 1);
+    }
+
+    if(elapsed < duration || particles.length){
+      requestAnimationFrame(step);
+    } else {
+      c.style.display = 'none';
+    }
+  }
+  requestAnimationFrame(step);
+}
+
+window.addEventListener('resize', function(){
+  if(c.style.display === 'block') fitConfettiCanvas();
+});
+
+
+  // ===== v1.2 Privacy / Authentication =====
+  function setSecurityState(msg, kind){
+    el.securityState.textContent = msg || '';
+    el.securityState.className = 'securityState' + (kind ? (' ' + kind) : '');
+  }
+
+  function clearSensitiveMemory(){
+    accessToken = '';
+    dataAll = null;
+    pool = [];
+    remaining = [];
+    batches = [];
+    meta = null;
+    selectedGroups = {};
+    if(el.accessCode) el.accessCode.value = '';
+    renderGroups();
+    renderBatches();
+    updatePoolUI();
+  }
+
+  function authenticateAccess(){
+    warn('');
+    var code = String(el.accessCode.value || '').trim();
+    if(!code){
+      setSecurityState('請先輸入名單存取碼。', 'bad');
+      return;
+    }
+    if(API_BASE_URL.indexOf('http') !== 0){
+      setSecurityState('尚未設定 Apps Script Web App URL。', 'bad');
+      return;
+    }
+
+    el.btnAuth.disabled = true;
+    setSecurityState('驗證中…', '');
+
+    var authUrl = API_BASE_URL + '?action=auth&code=' + encodeURIComponent(code);
+    jsonp(authUrl, function(resp){
+      el.btnAuth.disabled = false;
+      // 存取碼使用後立刻從畫面清除，不留在 DOM。
+      el.accessCode.value = '';
+
+      if(!resp || resp.ok !== true || !resp.token){
+        accessToken = '';
+        setSecurityState((resp && resp.message) ? resp.message : '驗證失敗。', 'bad');
+        return;
+      }
+
+      accessToken = String(resp.token);
+      setSecurityState('驗證成功 ✓　安全工作階段已建立。', 'ok');
+    }, function(){
+      el.btnAuth.disabled = false;
+      el.accessCode.value = '';
+      accessToken = '';
+      setSecurityState('驗證連線失敗，請稍後再試。', 'bad');
+    });
+  }
+
+  // ===== Load meta + dataAll =====
+  function loadAll(){
+    warn('');
+    var sheetId = String(el.sheetId.value||'').trim();
+    if(!accessToken){ warn('請先在「名單與抽籤設定」輸入存取碼並完成驗證。'); setSecurityState('尚未驗證。', 'bad'); return; }
+    if(!sheetId){ warn('請先貼上試算表 ID'); return; }
+    if(API_BASE_URL.indexOf('http') !== 0){
+      warn('你尚未設定 API_BASE_URL（請到 HTML 最上方把 PASTE_YOUR_WEB_APP_URL_HERE 換掉）。');
+      return;
+    }
+
+    el.btnLoad.disabled = true;
+    setDiag('更新名單中…', true);
+
+    // 1) meta
+    var metaUrl = API_BASE_URL + '?action=meta&sheetId=' + encodeURIComponent(sheetId) + '&token=' + encodeURIComponent(accessToken);
+    jsonp(metaUrl, function(resp1){
+      if(!resp1 || resp1.ok !== true){
+        el.btnLoad.disabled=false;
+        setDiag('名單更新失敗', false);
+        warn((resp1 && resp1.message) ? resp1.message : 'meta 取得失敗：請確認存取驗證與允許的試算表。');
+        return;
+      }
+      meta = resp1;
+
+      // default select all on first load (if none selected)
+      var hasAny = false;
+      for(var k in selectedGroups){ if(selectedGroups[k]){ hasAny=true; break; } }
+      if(!hasAny){
+        for(var i=0;i<meta.sheets.length;i++){
+          selectedGroups[ meta.sheets[i].sheetName ] = true;
+        }
+      }else{
+        // keep existing selections; add new sheets as unchecked by default
+        for(var j=0;j<meta.sheets.length;j++){
+          var nm = meta.sheets[j].sheetName;
+          if(typeof selectedGroups[nm] === 'undefined') selectedGroups[nm] = false;
+        }
+      }
+
+      renderGroups();
+
+      // 2) dataAll
+      var dataUrl = API_BASE_URL + '?action=dataAll&sheetId=' + encodeURIComponent(sheetId) + '&token=' + encodeURIComponent(accessToken);
+      jsonp(dataUrl, function(resp2){
+        el.btnLoad.disabled=false;
+        if(!resp2 || resp2.ok !== true){
+          setDiag('名單更新失敗', false);
+          warn((resp2 && resp2.message) ? resp2.message : 'dataAll 取得失敗：請確認存取驗證與允許的試算表。');
+          return;
+        }
+        dataAll = resp2;
+
+        rebuildPool();
+        renderBatches();
+        saveState();
+
+        setDiag('名單已就緒 · ' + (meta.total||0) + ' 人', true);
+        var sd = document.getElementById('setupDetails'); if(sd) sd.open = false;
+      }, function(){
+        el.btnLoad.disabled=false;
+        setDiag('名單更新失敗', false);
+        warn('dataAll 連線失敗：請確認網路與 Web App URL');
+      });
+
+    }, function(){
+      el.btnLoad.disabled=false;
+      setDiag('名單更新失敗', false);
+      warn('meta 連線失敗：請確認網路與 Web App URL');
+    });
+  }
+
+  // ===== Save/Restore =====
+  function saveState(){
+    /*
+      v1.2 個資保護：
+      不再把姓名、抽籤結果、試算表 ID、名單內容寫入 localStorage。
+      只保存不涉及個資的操作偏好。
+    */
+    try{
+      var payload = {
+        noRepeat: !!el.noRepeat.checked,
+        soundOn: !!el.soundOn.checked,
+        pickCount: clampPickCount()
+      };
+      localStorage.setItem(LS_KEY, JSON.stringify(payload));
+      localStorage.removeItem(LS_SHEETID);
+    }catch(e){}
+  }
+
+  function restoreState(){
+    try{
+      // 主動清除舊版本可能留下的試算表 ID。
+      localStorage.removeItem(LS_SHEETID);
+
+      var raw = localStorage.getItem(LS_KEY);
+      if(!raw) return;
+      var obj = JSON.parse(raw);
+      if(obj){
+        if(typeof obj.noRepeat === 'boolean') el.noRepeat.checked = obj.noRepeat;
+        if(typeof obj.soundOn === 'boolean') el.soundOn.checked = obj.soundOn;
+        if(obj.pickCount) el.pickCount.value = obj.pickCount;
+      }
+      // 舊版本若曾把個資存在同一 key，立刻覆寫為安全格式。
+      saveState();
+    }catch(e){}
+  }
+
+  function openClearConfirm(){
+    el.clearBackdrop.classList.add('show');
+    el.clearBackdrop.setAttribute('aria-hidden','false');
+    setTimeout(function(){ el.btnCancelClear.focus(); }, 0);
+  }
+
+  function closeClearConfirm(){
+    el.clearBackdrop.classList.remove('show');
+    el.clearBackdrop.setAttribute('aria-hidden','true');
+  }
+
+  function resetAll(){
+    batches = [];
+    // remaining resets to pool after rebuild
+    rebuildPool();
+    renderBatches();
+    saveState();
+    closeClearConfirm();
+    warn('抽籤紀錄已清除，抽籤池已重新建立 ✓');
+  }
+
+    // ===== Presenter Mode =====
+  function togglePresenter(){
+    var on = document.body.classList.toggle('presenter');
+
+    // 進入就嘗試全螢幕
+    if(on){
+      try{
+        if(!document.fullscreenElement){
+          document.documentElement.requestFullscreen();
+        }
+      }catch(e){}
+      el.btnPresenter.textContent = '退出主持人模式';
+    }else{
+      try{
+        if(document.fullscreenElement){
+          document.exitFullscreen();
+        }
+      }catch(e){}
+      el.btnPresenter.textContent = '主持人模式';
+    }
+  }
+// NEW: 使用者按 Esc 退出全螢幕時，同步退出主持人模式（避免卡住）
+document.addEventListener('fullscreenchange', function(){
+  if(!document.fullscreenElement && document.body.classList.contains('presenter')){
+    document.body.classList.remove('presenter');
+    el.btnPresenter.textContent = '主持人模式';
+  }
+});
+
+  // ===== Print =====
+  function doPrint(){
+    if(!batches.length){ warn('目前沒有可列印的紀錄'); return; }
+    el.printHeader.textContent = '抽籤結果（共 ' + batches.length + ' 次）｜列印時間：' + nowStamp();
+    window.print();
+  }
+
+  // ===== Group bulk ops =====
+  function setAll(val){
+    if(!meta || !meta.sheets) return;
+    for(var i=0;i<meta.sheets.length;i++){
+      selectedGroups[ meta.sheets[i].sheetName ] = val;
+    }
+    renderGroups();
+    rebuildPool();
+    saveState();
+  }
+  function invert(){
+    if(!meta || !meta.sheets) return;
+    for(var i=0;i<meta.sheets.length;i++){
+      var n = meta.sheets[i].sheetName;
+      selectedGroups[n] = !selectedGroups[n];
+    }
+    renderGroups();
+    rebuildPool();
+    saveState();
+  }
+
+  // ===== Bind events =====
+  el.btnDrawP.addEventListener('click', drawOnceBatch);
+el.btnExitP.addEventListener('click', function(){ if(document.body.classList.contains('presenter')) togglePresenter(); });
+  el.btnPresenter.addEventListener('click', togglePresenter);
+  el.btnLoad.addEventListener('click', loadAll);
+  el.btnAuth.addEventListener('click', authenticateAccess);
+  el.accessCode.addEventListener('keydown', function(e){ if(e.key === 'Enter') authenticateAccess(); });
+  el.btnDraw.addEventListener('click', drawOnceBatch);
+  el.btnPrint.addEventListener('click', doPrint);
+  el.btnReset.addEventListener('click', openClearConfirm);
+  el.btnCancelClear.addEventListener('click', closeClearConfirm);
+  el.btnConfirmClear.addEventListener('click', resetAll);
+  el.clearBackdrop.addEventListener('click', function(e){
+    if(e.target === el.clearBackdrop) closeClearConfirm();
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && el.clearBackdrop.classList.contains('show')) closeClearConfirm();
+  });
+
+  function syncGroupSummary(){
+    if(!el.groupDetails || !el.groupSummaryMeta) return;
+    el.groupSummaryMeta.textContent = el.groupDetails.open ? '點此收合' : '點此展開';
+  }
+  el.groupDetails.addEventListener('toggle', syncGroupSummary);
+  syncGroupSummary();
+  el.noRepeat.addEventListener('change', function(){
+    // toggling noRepeat should reset remaining from pool
+    remaining = pool.slice();
+    saveState();
+  });
+  el.pickCount.addEventListener('change', clampPickCount);
+
+  el.btnAll.addEventListener('click', function(){ setAll(true); });
+  el.btnNone.addEventListener('click', function(){ setAll(false); });
+  el.btnInvert.addEventListener('click', invert);
+
+  // modal close
+  el.btnClose.addEventListener('click', closeModal);
+  el.btnOk.addEventListener('click', closeModal);
+  el.backdrop.addEventListener('click', function(e){ if(e && e.target === el.backdrop) closeModal(); });
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeModal(); });
+
+  // keyboard shortcut
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Enter'){ e.preventDefault(); if(!el.btnDraw.disabled) drawOnceBatch(); }
+  });
+
+  // ===== Init =====
+  restoreState();
+  setDiag('準備抽籤', true);
+  var setup = document.getElementById('setupDetails');
+  if(setup && !String(el.sheetId.value||'').trim()) setup.open = true;
+  renderBatches();
+  updatePoolUI();
+
+})();
+  // v1.2：頁面關閉時清除記憶體中的敏感資料參照
+  window.addEventListener('pagehide', function(){
+    accessToken = '';
+    dataAll = null;
+    pool = [];
+    remaining = [];
+  });
+</script>
+</body>
+</html>
