@@ -954,6 +954,51 @@ body.presenter #btnExitP{
   }
 }
 
+
+/* ===== v1.2.3 iPad / 平板主持人模式結果顯示優化 ===== */
+/* 只影響主持人模式：縮減舞台無效留白，讓抽籤姓名成為畫面主視覺 */
+body.presenter .slot{
+  min-height:clamp(360px,52vh,560px);
+}
+body.presenter .nameBig{
+  font-size:clamp(72px,10vw,150px);
+  line-height:1.02;
+  padding:0 24px;
+  overflow-wrap:anywhere;
+}
+body.presenter .nameSub{
+  margin-top:12px;
+  font-size:clamp(24px,3.2vw,42px);
+  line-height:1.25;
+  padding:0 20px;
+}
+
+/* iPad / 一般平板：充分利用主持人模式的寬度與高度 */
+@media (min-width:601px) and (max-width:1180px){
+  body.presenter .wrap{max-width:none;width:100%;}
+  body.presenter .grid{margin-top:6px;}
+  body.presenter .grid > .card:first-child{padding:12px 16px 100px;}
+  body.presenter .slotWrap{padding:6px 0 0;gap:8px;}
+  body.presenter .slot{
+    width:min(94vw,920px);
+    min-height:clamp(360px,50vh,520px);
+  }
+  body.presenter .nameBig{
+    font-size:clamp(82px,12vw,138px);
+  }
+  body.presenter .nameSub{
+    font-size:clamp(25px,3.6vw,38px);
+  }
+  body.presenter #batches{max-height:24vh;}
+}
+
+/* 手機維持可讀但避免過度放大 */
+@media (max-width:600px){
+  body.presenter .slot{min-height:54dvh;}
+  body.presenter .nameBig{font-size:clamp(64px,20vw,104px);}
+  body.presenter .nameSub{font-size:clamp(20px,6vw,30px);margin-top:8px;}
+}
+
 </style>
 </head>
 <body>
