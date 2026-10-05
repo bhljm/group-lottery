@@ -1000,6 +1000,1305 @@ body.presenter .nameSub{
 }
 
 </style>
+
+<style id="campus-cartoon-theme-v123">
+/* =========================================================
+   群組名單抽籤機 v1.2.3｜校園卡通風格測試版
+   僅視覺層覆蓋：不修改 API、驗證、抽籤與資料處理邏輯
+   ========================================================= */
+:root{
+  --campus-sky:#eaf7ff;
+  --campus-blue:#1da1e8;
+  --campus-blue-deep:#087fc1;
+  --campus-yellow:#fff1a8;
+  --campus-green:#bdecc7;
+  --campus-orange:#ffb66e;
+  --campus-pink:#ffd6df;
+  --campus-ink:#24364b;
+  --campus-muted:#61758a;
+  --campus-line:#cfe6f4;
+  --campus-paper:#fffef9;
+}
+body{
+  color:var(--campus-ink);
+  background:
+    radial-gradient(circle at 8% 8%, rgba(255,241,168,.72) 0 70px, transparent 72px),
+    radial-gradient(circle at 93% 13%, rgba(189,236,199,.58) 0 88px, transparent 90px),
+    radial-gradient(circle at 88% 88%, rgba(255,214,223,.52) 0 95px, transparent 97px),
+    linear-gradient(180deg,#eaf8ff 0%,#f7fbff 45%,#fffdf5 100%) !important;
+}
+body::before{
+  content:"✏️   ⭐   📚   ☁️   📐   ✨   📝   ☁️   🎒";
+  position:fixed;
+  inset:0 0 auto 0;
+  height:92px;
+  overflow:hidden;
+  pointer-events:none;
+  z-index:0;
+  color:rgba(44,108,148,.14);
+  font-size:25px;
+  letter-spacing:34px;
+  white-space:nowrap;
+  transform:rotate(-2deg);
+  padding:18px 3vw;
+}
+body > *{position:relative;z-index:1}
+
+/* 頁首：像校園活動看板 */
+header, .header{
+  background:rgba(255,255,255,.78) !important;
+  border:2px solid rgba(255,255,255,.9) !important;
+  box-shadow:0 10px 28px rgba(46,104,138,.10) !important;
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+}
+h1{
+  color:#24364b !important;
+  letter-spacing:.04em;
+  text-shadow:0 2px 0 #fff;
+}
+h1::before{content:"🎒 ";font-size:.9em}
+.badge{
+  border-radius:999px !important;
+  background:#eef0ff !important;
+  color:#5654a8 !important;
+  border:1px solid #dcdcff !important;
+}
+.status,.statusOk,.ok{
+  color:#17824d !important;
+}
+
+/* 卡片統一成圓潤紙張 */
+.card, .panel, section{
+  border-color:var(--campus-line) !important;
+}
+.card{
+  background:rgba(255,255,255,.92) !important;
+  border:1.5px solid var(--campus-line) !important;
+  border-radius:24px !important;
+  box-shadow:0 10px 26px rgba(56,110,145,.09) !important;
+}
+.card h2,.card h3{
+  color:#27465d;
+}
+.card h2::after,.card h3::after{
+  content:" ✨";
+  font-size:.72em;
+}
+
+/* 設定區仍保持教師工具感，不過度卡通 */
+input,select,textarea{
+  border-radius:13px !important;
+  border-color:#cbdfea !important;
+  background:#fff !important;
+}
+input:focus,select:focus,textarea:focus{
+  border-color:#55b9ec !important;
+  box-shadow:0 0 0 3px rgba(29,161,232,.12) !important;
+}
+
+/* 一般按鈕 */
+button{
+  border-radius:14px !important;
+  font-weight:800 !important;
+}
+button:not(.btnDrawMain):not(#btnDrawP):not(#btnReset):not(#btnExitP){
+  box-shadow:0 3px 0 rgba(50,91,117,.10);
+}
+
+/* 群組卡片：像班級小卡 */
+.groupItem,.groupCard,.groupOption,.groupRow{
+  border-radius:16px !important;
+}
+.groupItem:has(input:checked),
+.groupCard:has(input:checked),
+.groupOption:has(input:checked),
+.groupRow:has(input:checked){
+  background:#eefaff !important;
+  border-color:#6bc5ef !important;
+  box-shadow:0 5px 14px rgba(29,161,232,.12) !important;
+}
+
+/* 抽籤舞台：校園活動主視覺 */
+.slotWrap,.slot,.slotStage,.drawStage{
+  border-radius:28px !important;
+}
+.slot,.slotStage,.drawStage{
+  position:relative;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 18% 18%,rgba(255,241,168,.46) 0 45px,transparent 47px),
+    radial-gradient(circle at 86% 78%,rgba(189,236,199,.38) 0 58px,transparent 60px),
+    linear-gradient(145deg,#ffffff 0%,#fffef8 55%,#f4fbff 100%) !important;
+  border:2px solid #d7edf8 !important;
+  box-shadow:
+    inset 0 0 0 6px rgba(255,255,255,.75),
+    0 14px 32px rgba(42,104,142,.10) !important;
+}
+.slot::before,.slotStage::before,.drawStage::before{
+  content:"⭐";
+  position:absolute;
+  left:22px;
+  top:18px;
+  font-size:30px;
+  opacity:.22;
+  transform:rotate(-14deg);
+}
+.slot::after,.slotStage::after,.drawStage::after{
+  content:"✏️";
+  position:absolute;
+  right:24px;
+  bottom:20px;
+  font-size:32px;
+  opacity:.18;
+  transform:rotate(16deg);
+}
+.slot .big,.slotBig,.drawName{
+  color:#18354c !important;
+  text-shadow:0 3px 0 rgba(255,255,255,.95);
+}
+.slot .sub,.slotSub,.drawSub{
+  color:#63798d !important;
+}
+
+/* 抽籤池標籤 */
+.poolBadge,.poolCount,.pill{
+  border-radius:999px !important;
+}
+
+/* 主抽籤按鈕：遊戲按鍵，但維持清楚專業 */
+.btnDrawMain,#btnDrawP{
+  background:linear-gradient(180deg,#35b9f0 0%,#0797dc 100%) !important;
+  border:1px solid #078dcc !important;
+  color:#fff !important;
+  box-shadow:
+    0 7px 0 #087fb7,
+    0 13px 22px rgba(14,165,233,.24) !important;
+  text-shadow:0 1px 0 rgba(0,0,0,.12);
+}
+.btnDrawMain:hover,#btnDrawP:hover{
+  filter:brightness(1.04);
+  transform:translateY(-1px);
+}
+.btnDrawMain:active,#btnDrawP:active{
+  transform:translateY(5px) !important;
+  box-shadow:0 2px 0 #087fb7,0 6px 12px rgba(14,165,233,.18) !important;
+}
+
+/* 清除維持危險操作辨識 */
+#btnReset{
+  background:linear-gradient(180deg,#ff8585,#ef5d5d) !important;
+  color:#fff !important;
+  border-color:#e34e4e !important;
+}
+
+/* 紀錄區像作業簿 */
+#history,.history,.historyList{
+  background-image:repeating-linear-gradient(
+    180deg,
+    transparent 0,
+    transparent 33px,
+    rgba(109,174,210,.10) 34px
+  );
+}
+
+/* 主持人模式：投影時更乾淨，只保留少量校園裝飾 */
+body.presenter{
+  background:
+    radial-gradient(circle at 12% 14%,rgba(255,238,145,.55) 0 85px,transparent 87px),
+    radial-gradient(circle at 88% 18%,rgba(183,236,204,.52) 0 95px,transparent 97px),
+    linear-gradient(180deg,#eaf8ff 0%,#fffdf7 100%) !important;
+}
+body.presenter::before{
+  content:"⭐      ✨      📚      ✏️      ✨      ⭐";
+  height:110px;
+  text-align:center;
+  font-size:28px;
+  opacity:.72;
+}
+body.presenter .slot,
+body.presenter .slotStage,
+body.presenter .drawStage{
+  background:
+    radial-gradient(circle at 13% 18%,rgba(255,236,133,.42) 0 62px,transparent 64px),
+    radial-gradient(circle at 88% 82%,rgba(183,236,204,.36) 0 76px,transparent 78px),
+    linear-gradient(145deg,#fff 0%,#fffdf4 60%,#effaff 100%) !important;
+  border:3px solid #d7edf8 !important;
+  box-shadow:0 18px 46px rgba(39,102,140,.13), inset 0 0 0 7px rgba(255,255,255,.8) !important;
+}
+body.presenter .slot .big,
+body.presenter .slotBig,
+body.presenter .drawName{
+  color:#172f46 !important;
+  font-weight:1000 !important;
+}
+body.presenter .slot .sub,
+body.presenter .slotSub,
+body.presenter .drawSub{
+  color:#566f83 !important;
+  font-weight:850 !important;
+}
+body.presenter .presenterBar{
+  border:2px solid rgba(255,255,255,.95) !important;
+  box-shadow:0 12px 32px rgba(38,91,125,.18) !important;
+}
+body.presenter #btnExitP{
+  background:#64748b !important;
+}
+
+/* 彈窗也統一圓潤 */
+.modal,.dialog,.modalCard{
+  border-radius:24px !important;
+}
+
+/* 平板：保留剛完成的 iPad 主持人顯示優化，不壓縮姓名 */
+@media (min-width:601px) and (max-width:1180px){
+  body.presenter .slot,
+  body.presenter .slotStage,
+  body.presenter .drawStage{
+    width:min(94vw,1100px) !important;
+  }
+}
+
+/* 手機：減少背景裝飾，維持操作空間 */
+@media(max-width:600px){
+  body::before{
+    content:"⭐  ✏️  📚  ☁️";
+    height:58px;
+    font-size:18px;
+    letter-spacing:18px;
+    padding-top:10px;
+  }
+  .card{border-radius:19px !important}
+  .slot,.slotStage,.drawStage{border-radius:22px !important}
+  body.presenter::before{
+    content:"⭐   ✨   ✏️   ⭐";
+    height:60px;
+    font-size:18px;
+  }
+}
+
+/* 尊重系統的減少動畫設定 */
+@media(prefers-reduced-motion:reduce){
+  .btnDrawMain,#btnDrawP{transition:none !important}
+}
+</style>
+
+
+<style id="campus-cartoon-theme-v123-refined">
+/* =========================================================
+   v1.2.3 校園卡通風格｜精修版
+   只覆蓋視覺，不修改 API、驗證、抽籤、個資與資料處理邏輯
+   ========================================================= */
+
+/* 整體：減少「一般工具頁」感，增加校園活動卡片層次 */
+.appHeader{
+  width:min(760px,calc(100% - 28px));
+  box-sizing:border-box;
+  margin:0 auto 8px;
+  min-height:64px;
+  padding:10px 18px;
+  border-radius:22px;
+  background:rgba(255,255,255,.86) !important;
+  border:2px solid rgba(255,255,255,.96) !important;
+  box-shadow:0 10px 28px rgba(46,104,138,.10) !important;
+}
+.appTitle{
+  color:#25445b;
+  text-shadow:0 2px 0 #fff;
+}
+.appTitle::before{
+  content:"🎲";
+  display:inline-block;
+  margin-right:8px;
+  transform:rotate(-7deg);
+}
+.versionBadge{
+  background:#eef0ff !important;
+  color:#5654a8 !important;
+  border:1px solid #dcdcff;
+}
+
+/* 狀態像一張小提示貼紙 */
+#diag.sub{
+  width:max-content;
+  max-width:calc(100% - 28px);
+  box-sizing:border-box;
+  padding:5px 13px;
+  border-radius:999px;
+  background:rgba(255,255,255,.76);
+  border:1px solid rgba(207,230,244,.95);
+  box-shadow:0 4px 12px rgba(56,110,145,.06);
+}
+
+/* 控制區 */
+.toolbar{
+  background:rgba(255,255,255,.92) !important;
+  border:1.5px solid #cfe6f4 !important;
+  border-radius:24px !important;
+  box-shadow:0 10px 28px rgba(56,110,145,.08) !important;
+}
+.setupDetails summary{
+  background:#f8fcff;
+  border:1px dashed #bddcec;
+}
+.setupDetails summary::before{content:"⚙️";}
+
+/* 主操作：維持抽籤最大，其他功能視覺降階 */
+.primaryActions #btnPresenter{
+  background:#68a8d2;
+}
+.primaryActions #btnPrint{
+  background:#53677c;
+}
+.primaryActions #btnReset{
+  background:linear-gradient(180deg,#ff8585,#ef5d5d) !important;
+}
+
+/* 群組卡真正套用到目前程式使用的 .gItem */
+.gItem{
+  position:relative;
+  background:#fffefb !important;
+  border:1.5px solid #d5e8f2 !important;
+  border-radius:16px !important;
+  box-shadow:0 4px 10px rgba(51,102,135,.045);
+  transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease,background .15s ease;
+}
+.gItem:hover{
+  transform:translateY(-1px);
+  border-color:#8accea !important;
+  box-shadow:0 6px 15px rgba(29,161,232,.10);
+}
+.gItem:has(input:checked){
+  background:linear-gradient(135deg,#eefaff,#fffdf3) !important;
+  border-color:#55b9ec !important;
+  box-shadow:0 6px 16px rgba(29,161,232,.13);
+}
+.gItem:has(input:checked)::after{
+  content:"✓";
+  position:absolute;
+  right:9px;
+  top:8px;
+  width:20px;height:20px;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:50%;
+  background:#34b37a;color:#fff;
+  font-size:12px;font-weight:1000;
+}
+.gItem input[type=checkbox]{accent-color:#1da1e8;}
+.gName{color:#29465b;}
+.gCount{color:#718496;}
+
+/* 群組區標題像校園分類牌 */
+.groupDetails summary{
+  background:linear-gradient(90deg,#f6fcff,#fffdf6);
+}
+.groupSummaryTitle::before{
+  content:"📚 ";
+}
+.groupTools .btn{
+  background:#7697ad;
+}
+
+/* 抽籤主卡片與舞台 */
+.grid > .card:first-child{
+  position:relative;
+  overflow:hidden;
+}
+.grid > .card:first-child::before{
+  content:"";
+  position:absolute;
+  width:120px;height:120px;
+  left:-45px;bottom:-55px;
+  border-radius:50%;
+  background:rgba(255,241,168,.25);
+  pointer-events:none;
+}
+.cardTitle{
+  color:#2a485e;
+}
+.grid > .card:first-child > .cardTitle:first-child::before{
+  content:"🎲 ";
+}
+
+/* 修正原校園主題 selector：目前姓名 class 是 nameBig/nameSub */
+.slot{
+  isolation:isolate;
+}
+.slot::before{
+  content:"⭐" !important;
+  inset:auto !important;
+  left:22px !important;
+  top:18px !important;
+  width:auto !important;height:auto !important;
+  background:none !important;
+  opacity:.24 !important;
+  font-size:30px;
+  transform:rotate(-14deg);
+}
+.slot::after{
+  content:"✏️";
+  position:absolute;
+  right:24px;bottom:20px;
+  font-size:32px;
+  opacity:.19;
+  transform:rotate(16deg);
+  z-index:0;
+}
+.slot > div{
+  position:relative;
+  z-index:2;
+  width:100%;
+}
+.nameBig{
+  color:#173a53 !important;
+  text-shadow:0 3px 0 #fff;
+}
+.nameSub{
+  color:#617b90 !important;
+}
+#poolInfo{
+  background:#fff7c9;
+  color:#715b16;
+  border:1px solid #f2dd7d;
+  box-shadow:0 3px 8px rgba(138,111,23,.07);
+}
+
+/* 紀錄區：每一次抽籤像小作業卡 */
+.batch{
+  position:relative;
+  background:rgba(255,255,255,.92) !important;
+  border:1.5px solid #d9eaf3 !important;
+  box-shadow:0 4px 12px rgba(54,104,136,.05);
+}
+.batch::before{
+  content:"";
+  position:absolute;
+  left:0;top:10px;bottom:10px;
+  width:4px;border-radius:0 5px 5px 0;
+  background:#74c8ef;
+}
+.batchTitle{color:#294b62;}
+.batchList li::marker{color:#169fdc;font-weight:1000;}
+
+/* 設定內的小卡片 */
+.securityBox{
+  background:linear-gradient(135deg,#f7fcff,#fffef9) !important;
+  border:1.5px solid #d2e7f2 !important;
+}
+.titleDisplayOptions .optionLabel,
+.secondaryActions .check{
+  background:#fffefb !important;
+  border-color:#d6e7ef !important;
+}
+input[type=checkbox]{accent-color:#1da1e8;}
+
+/* 結果彈窗 */
+.modal{
+  border:2px solid #d9edf7;
+  background:#fffefb;
+}
+.mHead{
+  background:linear-gradient(90deg,#f1faff,#fffbed);
+}
+.mTitle::before{content:"🎉 ";}
+.mList .row{
+  background:#fff;
+  border-color:#dcecf4;
+}
+.mList .idx{
+  background:#dff4ff;
+  color:#087fc1;
+}
+
+/* 清除確認 */
+.confirmDialog{
+  background:#fffefb;
+  border:2px solid #f7d7dc;
+}
+.confirmIcon{
+  box-shadow:0 0 0 7px rgba(255,214,223,.35);
+}
+
+/* 主持人模式：主舞台更像校園抽獎活動，不加入會干擾姓名的元素 */
+body.presenter .grid > .card:first-child{
+  background:transparent !important;
+  box-shadow:none !important;
+}
+body.presenter .grid > .card:first-child > .cardTitle{
+  display:none;
+}
+body.presenter .slot{
+  border:3px solid #cce9f6 !important;
+}
+body.presenter .slot::before{
+  font-size:44px;
+  left:34px !important;
+  top:28px !important;
+}
+body.presenter .slot::after{
+  font-size:46px;
+  right:38px;
+  bottom:30px;
+}
+body.presenter #poolInfo{
+  background:rgba(255,255,255,.88);
+}
+body.presenter .presenterBar{
+  background:rgba(255,255,255,.95) !important;
+  border:2px solid #d9edf7 !important;
+}
+
+/* 手機：保留卡通感，但不要犧牲操作空間 */
+@media(max-width:600px){
+  .appHeader{
+    width:100%;
+    min-height:56px;
+    margin:0;
+    border-radius:0;
+    border-width:0 0 1px 0 !important;
+    background:rgba(248,252,255,.96) !important;
+  }
+  .appTitle::before{font-size:.92em;margin-right:5px}
+  #diag.sub{
+    width:100%;
+    max-width:none;
+    border-radius:0;
+    border-width:0 0 1px 0;
+    box-shadow:none;
+    background:rgba(248,252,255,.96);
+  }
+  .toolbar{border-radius:20px !important;}
+  .gItem:has(input:checked)::after{
+    width:18px;height:18px;right:7px;top:6px;font-size:11px;
+  }
+  .slot::before{left:13px !important;top:12px !important;font-size:23px;}
+  .slot::after{right:14px;bottom:13px;font-size:24px;}
+  body.presenter .slot::before{font-size:28px;left:16px !important;top:16px !important;}
+  body.presenter .slot::after{font-size:30px;right:18px;bottom:18px;}
+}
+
+/* 列印維持乾淨，不印背景裝飾 */
+@media print{
+  body{background:#fff !important;}
+  body::before{display:none !important;}
+  .batch::before{display:none !important;}
+}
+</style>
+
+
+<style id="v123-final-layout-tweaks">
+/* ===== v1.2.3 最終微調：版本號、設定區順序 ===== */
+.versionBadge{
+  font-size:.52em !important;
+  font-weight:800 !important;
+  padding:3px 8px !important;
+  margin-left:6px !important;
+  vertical-align:middle !important;
+  opacity:.72;
+}
+.toolbar > .setupDetails{
+  margin-bottom:12px;
+}
+.toolbar > .primaryActions{
+  margin-top:0;
+}
+@media(max-width:600px){
+  .versionBadge{
+    font-size:.48em !important;
+    padding:2px 6px !important;
+    margin-left:4px !important;
+  }
+  .toolbar > .setupDetails{
+    margin-bottom:8px;
+  }
+}
+</style>
+
+
+<style id="v123-ui-polish-20261005">
+/* ===== v1.2.3 UI 精修 ===== */
+
+/* 抽籤主按鈕與下方三鍵拉開距離 */
+@media (min-width:601px){
+  .primaryActions{row-gap:14px !important;}
+  .primaryActions .btnDrawMain{margin-bottom:4px !important;}
+}
+
+/* 主持人模式改為柔和綠色系 */
+.primaryActions #btnPresenter{
+  background:linear-gradient(180deg,#62cf9f 0%,#35ae7b 100%) !important;
+  border-color:#299d6d !important;
+  color:#fff !important;
+  box-shadow:0 4px 10px rgba(50,173,121,.18) !important;
+}
+.primaryActions #btnPresenter:hover{filter:brightness(1.035);}
+.primaryActions #btnPresenter:active{transform:translateY(1px);}
+
+/* 設定選項統一為一致的膠囊卡片 */
+.secondaryActions{
+  display:flex !important;
+  flex-wrap:wrap !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:9px !important;
+  width:100% !important;
+}
+.secondaryActions .pill,
+.secondaryActions .check,
+.secondaryActions .pickControl,
+.titleDisplayOptions .optionLabel{
+  min-height:44px !important;
+  box-sizing:border-box !important;
+  border:1px solid #cfe2ee !important;
+  border-radius:14px !important;
+  background:#fff !important;
+  color:#334155 !important;
+  font-weight:850 !important;
+  box-shadow:0 2px 7px rgba(51,65,85,.045) !important;
+}
+
+/* 載入狀態 */
+.secondaryActions .pill{
+  display:inline-flex !important;
+  align-items:center !important;
+  padding:0 15px !important;
+  background:#f0f5ff !important;
+  border-color:#e0e8ff !important;
+  color:#24448e !important;
+}
+
+/* 不重複 / 音效 */
+.secondaryActions .check{
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:8px !important;
+  padding:0 13px !important;
+  margin:0 !important;
+}
+.secondaryActions .check input[type="checkbox"],
+.titleDisplayOptions .optionLabel input[type="checkbox"]{
+  width:20px !important;
+  height:20px !important;
+  min-width:20px !important;
+  margin:0 !important;
+  accent-color:#159fd7;
+  cursor:pointer;
+}
+
+/* 職稱顯示選項同步同一視覺 */
+.titleDisplayOptions{
+  gap:9px !important;
+  margin-top:2px !important;
+}
+.titleDisplayOptions .optionLabel{
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:8px !important;
+  padding:0 14px !important;
+  margin:0 !important;
+}
+
+/* 「一次抽」整合成完整控制元件 */
+.secondaryActions .pickControl{
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:9px !important;
+  padding:0 8px 0 13px !important;
+  margin:0 !important;
+}
+.secondaryActions .pickControl span{white-space:nowrap;}
+.secondaryActions #pickCount{
+  width:72px !important;
+  height:32px !important;
+  min-height:32px !important;
+  padding:2px 8px !important;
+  margin:0 !important;
+  border:1px solid #bcd8e8 !important;
+  border-radius:10px !important;
+  background:#f8fcff !important;
+  color:#0f172a !important;
+  font-size:17px !important;
+  font-weight:900 !important;
+  text-align:center !important;
+  box-shadow:inset 0 1px 2px rgba(15,23,42,.04) !important;
+}
+
+/* 版本號再縮小，只保留辨識用途 */
+.versionBadge{
+  font-size:.40em !important;
+  font-weight:800 !important;
+  padding:2px 6px !important;
+  margin-left:5px !important;
+  opacity:.64 !important;
+  vertical-align:middle !important;
+  box-shadow:none !important;
+}
+
+/* 手機版重新排列，維持一致與好點按 */
+@media(max-width:600px){
+  .primaryActions{row-gap:7px !important;}
+  .secondaryActions{
+    display:grid !important;
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    gap:7px !important;
+  }
+  .secondaryActions .pill{
+    grid-column:1/-1 !important;
+    justify-content:center !important;
+  }
+  .secondaryActions .check,
+  .secondaryActions .pickControl{width:100% !important;}
+  .secondaryActions .pickControl{grid-column:1/-1 !important;}
+  .titleDisplayOptions{
+    display:grid !important;
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    gap:7px !important;
+  }
+  .versionBadge{
+    font-size:.38em !important;
+    padding:2px 5px !important;
+    margin-left:3px !important;
+  }
+}
+</style>
+
+
+<style id="v123-group-polish-20261005">
+/* ===== v1.2.3 群組選擇區精修 ===== */
+
+/* 三個批次操作按鈕：平時白底，按下才填滿 */
+.groupTools{
+  gap:8px !important;
+}
+.groupTools .btn{
+  min-height:40px !important;
+  padding:0 16px !important;
+  border-radius:13px !important;
+  background:#fff !important;
+  color:#52758b !important;
+  border:1.5px solid #9fc3d6 !important;
+  box-shadow:0 2px 6px rgba(45,91,115,.06) !important;
+  font-weight:900 !important;
+  transition:background .12s ease,color .12s ease,transform .08s ease,box-shadow .12s ease !important;
+}
+.groupTools .btn:hover{
+  background:#f0f9fd !important;
+  color:#315e78 !important;
+  border-color:#77aec9 !important;
+}
+.groupTools .btn:active,
+.groupTools .btn.is-active{
+  background:#6f9eb8 !important;
+  color:#fff !important;
+  border-color:#6f9eb8 !important;
+  box-shadow:0 3px 8px rgba(61,111,139,.18) !important;
+  transform:translateY(1px);
+}
+
+/* 工作表多時避免整頁被拉得太長：改成緊湊多欄卡片 */
+.groupList{
+  display:grid !important;
+  grid-template-columns:repeat(auto-fill,minmax(155px,1fr)) !important;
+  gap:8px !important;
+  align-items:stretch !important;
+}
+.gItem{
+  min-height:70px !important;
+  padding:10px 11px !important;
+  border-width:1.5px !important;
+  border-radius:14px !important;
+  gap:9px !important;
+  align-items:flex-start !important;
+  box-sizing:border-box !important;
+}
+.gItem input[type="checkbox"]{
+  width:19px !important;
+  height:19px !important;
+  min-width:19px !important;
+  margin:2px 0 0 !important;
+}
+.gItem .gMeta{
+  min-width:0 !important;
+  flex:1 1 auto !important;
+}
+.gItem .gName{
+  font-size:15px !important;
+  line-height:1.25 !important;
+  font-weight:900 !important;
+  overflow-wrap:anywhere;
+}
+.gItem .gCount{
+  margin-top:4px !important;
+  font-size:13px !important;
+  line-height:1.2 !important;
+}
+
+/* 已選群組維持清楚但不過度厚重 */
+.gItem:has(input:checked){
+  background:linear-gradient(135deg,#f0fbff 0%,#fffdf7 100%) !important;
+  border-color:#38bdf8 !important;
+}
+
+/* 中型平板：固定 3 欄，排列整齊 */
+@media (min-width:601px) and (max-width:900px){
+  .groupList{
+    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  }
+}
+
+/* 手機：兩欄卡片，工作表多時高度約可減半 */
+@media(max-width:600px){
+  .groupTools{
+    display:grid !important;
+    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+    width:100% !important;
+    gap:6px !important;
+  }
+  .groupTools .btn{
+    width:100% !important;
+    min-width:0 !important;
+    padding:0 5px !important;
+    min-height:40px !important;
+    font-size:14px !important;
+  }
+  .groupList{
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    gap:7px !important;
+  }
+  .gItem{
+    min-height:68px !important;
+    padding:9px !important;
+    gap:7px !important;
+  }
+  .gItem .gName{
+    font-size:14px !important;
+  }
+  .gItem .gCount{
+    font-size:12.5px !important;
+  }
+}
+
+/* 極窄手機仍退回單欄，避免名稱被擠壞 */
+@media(max-width:360px){
+  .groupList{
+    grid-template-columns:1fr !important;
+  }
+}
+</style>
+
+
+<style id="v123-presenter-stage-redesign">
+/* ===== v1.2.3 主持人模式：純抽籤舞台 ===== */
+
+/* 主持人模式不顯示標題、狀態、警告、一般控制列與右側群組 */
+body.presenter .appHeader,
+body.presenter #diag,
+body.presenter .toolbar,
+body.presenter #warning,
+body.presenter .grid > .card:nth-child(2),
+body.presenter .cardTitle{
+  display:none !important;
+}
+
+/* 主持人模式本身允許垂直捲動，第一屏舞台、第二屏紀錄 */
+body.presenter{
+  padding:0 !important;
+  overflow-x:hidden !important;
+  overflow-y:auto !important;
+}
+body.presenter .wrap{
+  width:100% !important;
+  max-width:none !important;
+  margin:0 !important;
+  padding:0 !important;
+}
+body.presenter .grid{
+  display:block !important;
+  width:100% !important;
+  margin:0 !important;
+}
+body.presenter .grid > .card:first-child{
+  display:block !important;
+  width:100% !important;
+  max-width:none !important;
+  margin:0 !important;
+  padding:0 !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+}
+
+/* 第一屏：只保留抽籤卡片 */
+body.presenter .slotWrap{
+  position:relative !important;
+  box-sizing:border-box !important;
+  min-height:100dvh !important;
+  width:100% !important;
+  padding:clamp(20px,4vh,44px) clamp(16px,4vw,64px) 118px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+}
+
+/* 抽籤卡片成為真正主視覺 */
+body.presenter .slot{
+  width:min(1120px,92vw) !important;
+  min-height:min(68dvh,690px) !important;
+  margin:0 auto !important;
+  border-radius:32px !important;
+  box-shadow:0 22px 64px rgba(34,77,99,.18) !important;
+}
+body.presenter .nameBig{
+  font-size:clamp(86px,11vw,172px) !important;
+  line-height:1.02 !important;
+  padding:0 28px !important;
+}
+body.presenter .nameSub{
+  margin-top:18px !important;
+  font-size:clamp(28px,3vw,46px) !important;
+  line-height:1.25 !important;
+  padding:0 24px !important;
+}
+
+/* 抽籤池在主持人模式完全隱藏 */
+body.presenter #poolInfo{
+  display:none !important;
+}
+
+/* 原 actions 不占空間；浮動控制列仍可固定在舞台下方 */
+body.presenter .slotWrap > .actions{
+  position:static !important;
+  width:0 !important;
+  height:0 !important;
+  min-height:0 !important;
+  margin:0 !important;
+  padding:0 !important;
+}
+
+/* 主持人控制列：固定在第一屏下方，只有抽籤與退出 */
+body.presenter .presenterBar{
+  display:grid !important;
+  position:fixed !important;
+  left:50% !important;
+  bottom:calc(18px + env(safe-area-inset-bottom)) !important;
+  transform:translateX(-50%) !important;
+  grid-template-columns:minmax(260px,1fr) 108px !important;
+  width:min(680px,calc(100vw - 32px)) !important;
+  gap:10px !important;
+  padding:9px !important;
+  border-radius:20px !important;
+  background:rgba(255,255,255,.96) !important;
+  border:1px solid #d8e8f0 !important;
+  box-shadow:0 12px 34px rgba(35,74,95,.18) !important;
+  backdrop-filter:blur(14px) !important;
+  -webkit-backdrop-filter:blur(14px) !important;
+  z-index:10002 !important;
+}
+body.presenter #btnDrawP{
+  min-height:62px !important;
+  font-size:21px !important;
+}
+body.presenter #btnExitP{
+  min-height:54px !important;
+}
+
+/* 第一屏後的留白與舊說明全部隱藏 */
+body.presenter .slotWrap + div[style*="height:12px"],
+body.presenter .slotWrap ~ .tiny.muted,
+body.presenter .slotWrap ~ div[style*="height:8px"]{
+  display:none !important;
+}
+
+/* 第二屏：抽籤紀錄獨立區塊 */
+body.presenter #printHeader{
+  display:none !important;
+}
+body.presenter #batches{
+  box-sizing:border-box !important;
+  width:min(1120px,calc(100% - 32px)) !important;
+  min-height:100dvh !important;
+  max-height:none !important;
+  overflow:visible !important;
+  margin:0 auto !important;
+  padding:88px 18px 130px !important;
+  position:relative !important;
+}
+body.presenter #batches::before{
+  content:"抽籤紀錄";
+  display:block;
+  margin:0 0 22px !important;
+  color:#294a60;
+  font-size:clamp(26px,3vw,38px);
+  font-weight:1000;
+  letter-spacing:.04em;
+  text-align:center;
+}
+
+/* 平板 */
+@media (min-width:601px) and (max-width:1180px){
+  body.presenter .slotWrap{
+    min-height:100dvh !important;
+    padding:24px 24px 112px !important;
+  }
+  body.presenter .slot{
+    width:min(94vw,920px) !important;
+    min-height:64dvh !important;
+  }
+  body.presenter .nameBig{
+    font-size:clamp(84px,12vw,142px) !important;
+  }
+  body.presenter .nameSub{
+    font-size:clamp(26px,3.7vw,40px) !important;
+  }
+  body.presenter #batches{
+    width:min(94vw,920px) !important;
+    min-height:100dvh !important;
+    padding-top:72px !important;
+  }
+}
+
+/* 手機 */
+@media(max-width:600px){
+  body.presenter .slotWrap{
+    min-height:100dvh !important;
+    padding:16px 12px 100px !important;
+  }
+  body.presenter .slot{
+    width:100% !important;
+    min-height:66dvh !important;
+    border-radius:24px !important;
+  }
+  body.presenter .nameBig{
+    font-size:clamp(64px,20vw,108px) !important;
+    padding:0 12px !important;
+  }
+  body.presenter .nameSub{
+    font-size:clamp(21px,6vw,31px) !important;
+    margin-top:10px !important;
+  }
+  body.presenter .presenterBar{
+    grid-template-columns:minmax(0,1fr) 76px !important;
+    left:8px !important;
+    right:8px !important;
+    bottom:calc(8px + env(safe-area-inset-bottom)) !important;
+    transform:none !important;
+    width:auto !important;
+    padding:7px !important;
+    gap:6px !important;
+    border-radius:17px !important;
+  }
+  body.presenter #btnDrawP{
+    min-height:56px !important;
+    font-size:18px !important;
+  }
+  body.presenter #btnExitP{
+    width:76px !important;
+    min-height:48px !important;
+  }
+  body.presenter #batches{
+    width:calc(100% - 20px) !important;
+    min-height:100dvh !important;
+    padding:58px 4px 110px !important;
+  }
+}
+</style>
+
+
+<style id="v123-final-visual-polish">
+/* ===== v1.2.3 視覺精修：主持人舞台 + 設定選項 ===== */
+
+/* 1. 主持人模式：姓名與副資訊再放大 */
+body.presenter .nameBig{
+  font-size:clamp(108px,13.2vw,205px) !important;
+  line-height:.98 !important;
+  font-weight:1000 !important;
+  letter-spacing:.015em !important;
+}
+body.presenter .nameSub{
+  margin-top:22px !important;
+  font-size:clamp(34px,3.7vw,58px) !important;
+  line-height:1.18 !important;
+  font-weight:800 !important;
+}
+
+/* 2. 主持人控制列：抽籤與退出高度統一，退出不再像小附屬鍵 */
+body.presenter .presenterBar{
+  grid-template-columns:minmax(280px,1fr) 132px !important;
+  align-items:stretch !important;
+}
+body.presenter #btnDrawP,
+body.presenter #btnExitP{
+  height:64px !important;
+  min-height:64px !important;
+  border-radius:15px !important;
+  margin:0 !important;
+}
+body.presenter #btnExitP{
+  width:132px !important;
+  min-width:132px !important;
+  padding:0 18px !important;
+  font-size:16px !important;
+  font-weight:900 !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+}
+
+/* 3. 設定選項：改成「狀態 + 主要設定 + 職稱設定」三層置中排列 */
+.secondaryActions{
+  display:grid !important;
+  grid-template-columns:max-content max-content max-content !important;
+  justify-content:center !important;
+  align-items:center !important;
+  gap:9px !important;
+  width:100% !important;
+}
+
+/* 載入狀態獨立第一列 */
+.secondaryActions .pill{
+  grid-column:1 / -1 !important;
+  justify-self:center !important;
+  min-height:42px !important;
+}
+
+/* 不重複、音效、一次抽在第二列同高 */
+.secondaryActions .check,
+.secondaryActions .pickControl{
+  min-height:46px !important;
+  height:46px !important;
+}
+
+/* 職稱顯示選項獨立第三列，與上排置中 */
+.titleDisplayOptions{
+  display:grid !important;
+  grid-template-columns:repeat(2,max-content) !important;
+  justify-content:center !important;
+  align-items:center !important;
+  gap:9px !important;
+  width:100% !important;
+  margin-top:1px !important;
+}
+.titleDisplayOptions .optionLabel{
+  min-height:46px !important;
+  height:46px !important;
+  min-width:156px !important;
+}
+
+/* checkbox 視覺尺寸統一 */
+.secondaryActions .check input[type="checkbox"],
+.titleDisplayOptions .optionLabel input[type="checkbox"]{
+  width:21px !important;
+  height:21px !important;
+  min-width:21px !important;
+}
+
+/* 一次抽的數字框與整列更協調 */
+.secondaryActions .pickControl{
+  padding-left:14px !important;
+  padding-right:8px !important;
+}
+.secondaryActions #pickCount{
+  width:76px !important;
+  height:34px !important;
+  min-height:34px !important;
+}
+
+/* 平板主持人模式仍放大，但避免長姓名超出 */
+@media (min-width:601px) and (max-width:1180px){
+  body.presenter .nameBig{
+    font-size:clamp(96px,14vw,158px) !important;
+  }
+  body.presenter .nameSub{
+    font-size:clamp(30px,4.2vw,44px) !important;
+  }
+}
+
+/* 手機設定：狀態一列；不重複/音效一列；一次抽一列；職稱一列 */
+@media(max-width:600px){
+  .secondaryActions{
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    gap:7px !important;
+  }
+  .secondaryActions .pill{
+    grid-column:1/-1 !important;
+    width:auto !important;
+  }
+  .secondaryActions .check{
+    width:100% !important;
+  }
+  .secondaryActions .pickControl{
+    grid-column:1/-1 !important;
+    width:min(230px,100%) !important;
+    justify-self:center !important;
+  }
+  .titleDisplayOptions{
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    gap:7px !important;
+  }
+  .titleDisplayOptions .optionLabel{
+    min-width:0 !important;
+    width:100% !important;
+  }
+
+  body.presenter .nameBig{
+    font-size:clamp(76px,23vw,118px) !important;
+  }
+  body.presenter .nameSub{
+    font-size:clamp(24px,7vw,34px) !important;
+  }
+  body.presenter .presenterBar{
+    grid-template-columns:minmax(0,1fr) 88px !important;
+  }
+  body.presenter #btnDrawP,
+  body.presenter #btnExitP{
+    height:58px !important;
+    min-height:58px !important;
+  }
+  body.presenter #btnExitP{
+    width:88px !important;
+    min-width:88px !important;
+    font-size:14px !important;
+    padding:0 8px !important;
+  }
+}
+</style>
+
+
+<style id="v123-presenter-text-plus">
+/* ===== v1.2.3 主持人模式結果文字再放大 ===== */
+body.presenter .nameBig{
+  font-size:clamp(124px,15.2vw,236px) !important;
+}
+body.presenter .nameSub{
+  font-size:clamp(37px,4.1vw,64px) !important;
+}
+
+/* 平板：同步放大，但保留四字姓名安全空間 */
+@media (min-width:601px) and (max-width:1180px){
+  body.presenter .nameBig{
+    font-size:clamp(108px,15.8vw,178px) !important;
+  }
+  body.presenter .nameSub{
+    font-size:clamp(33px,4.6vw,48px) !important;
+  }
+}
+
+/* 手機：適度增加，避免小螢幕爆版 */
+@media(max-width:600px){
+  body.presenter .nameBig{
+    font-size:clamp(84px,25vw,128px) !important;
+  }
+  body.presenter .nameSub{
+    font-size:clamp(26px,7.5vw,37px) !important;
+  }
+}
+</style>
+
 </head>
 <body>
   <header class="appHeader"><div class="appTitle">群組名單抽籤機 <span class="versionBadge">v1.2.3</span></div></header>
@@ -1007,13 +2306,6 @@ body.presenter .nameSub{
 
   <div class="wrap">
     <div class="toolbar" role="region" aria-label="控制列">
-      <div class="primaryActions">
-        <button id="btnDraw" class="btn btn-accent btnDrawMain">抽籤</button>
-        <button id="btnPresenter" class="btn btn-gray" type="button">主持人模式</button>
-        <button id="btnReset" class="btn btn-danger btnClearMain" type="button">清除紀錄</button>
-        <button id="btnPrint" class="btn btn-ghost">列印</button>
-      </div>
-
       <details id="setupDetails" class="setupDetails">
         <summary>名單與抽籤設定</summary>
         <div class="setupPanel">
@@ -1048,9 +2340,16 @@ body.presenter .nameSub{
             <label class="optionLabel"><input id="showTitle1" type="checkbox" checked /> 顯示職稱1</label>
             <label class="optionLabel"><input id="showTitle2" type="checkbox" checked /> 顯示職稱2</label>
           </div>
-          <div class="tiny helperText">工作表名稱即為群組；支援「姓名、職稱1、職稱2、備註」欄位。職稱1、職稱2可各自設定是否顯示。姓名與抽籤結果不會永久儲存在瀏覽器。</div>
+          
         </div>
       </details>
+
+      <div class="primaryActions">
+        <button id="btnDraw" class="btn btn-accent btnDrawMain">抽籤</button>
+        <button id="btnPresenter" class="btn btn-gray" type="button">主持人模式</button>
+        <button id="btnReset" class="btn btn-danger btnClearMain" type="button">清除紀錄</button>
+        <button id="btnPrint" class="btn btn-ghost">列印結果</button>
+      </div>
     </div>
 
     <div id="warning" class="warn"></div>
@@ -1103,7 +2402,7 @@ body.presenter .nameSub{
               <button id="btnInvert" class="btn btn-gray" type="button">反選</button>
             </div>
             <div id="groupList" class="groupList"></div>
-            <div class="tiny muted">提示：工作表名稱就是群組名稱（例如：主任 / 組長 / 一年級導師）。</div>
+            
           </div>
         </details>
       </div>
@@ -1212,38 +2511,52 @@ btnPrint: $('btnPrint'),
   var audioCtx = null;
   function beepTick(mode){
   if(!el.soundOn.checked) return;
-  mode = mode || 'fast'; // fast | slow
+  mode = mode || 'fast'; // fast | slow | final
 
   try{
     if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+
+    var now = audioCtx.currentTime;
+
+    // 校園卡通風：用圓潤的玩具琴 / 木琴感取代尖銳電子嗶聲
+    var noteSets = {
+      fast: [784, 880, 988, 880, 1047, 988],
+      slow: [659, 784, 880, 988],
+      final:[523]
+    };
+    var set = noteSets[mode] || noteSets.fast;
+
+    // 每次略換音高，讓連續抽籤聽起來活潑但不雜亂
+    beepTick._step = (beepTick._step || 0) + 1;
+    var freq = set[beepTick._step % set.length];
 
     var o = audioCtx.createOscillator();
     var g = audioCtx.createGain();
+    var filter = audioCtx.createBiquadFilter();
 
-    if(mode === 'final'){
-  // 最後一跳：低頻、長音、很有「定錨感」
-  o.type = 'sine';
-  o.frequency.value = 520;
-  g.gain.value = 0.06;
-  o.connect(g); g.connect(audioCtx.destination);
-  o.start();
-  setTimeout(function(){ o.stop(); }, 160);
-  return;
-}
+    o.type = 'sine';
+    o.frequency.setValueAtTime(freq, now);
+    if(mode !== 'final'){
+      o.frequency.exponentialRampToValueAtTime(freq * 0.985, now + (mode === 'slow' ? .10 : .055));
+    }
 
-if(mode === 'slow'){
-  o.type = 'sine';
-  o.frequency.value = 760;
-  g.gain.value = 0.05;
-}else{
-  o.type = 'square';
-  o.frequency.value = 1150;
-  g.gain.value = 0.03;
-}
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(mode === 'final' ? 1800 : 2600, now);
+    filter.Q.setValueAtTime(.7, now);
 
-    o.connect(g); g.connect(audioCtx.destination);
-    o.start();
-    setTimeout(function(){ o.stop(); }, (mode === 'slow' ? 70 : 30));
+    var peak = mode === 'final' ? .180 : (mode === 'slow' ? .135 : .095);
+    var dur  = mode === 'final' ? .20  : (mode === 'slow' ? .105 : .058);
+
+    g.gain.setValueAtTime(.0001, now);
+    g.gain.exponentialRampToValueAtTime(peak, now + .008);
+    g.gain.exponentialRampToValueAtTime(.0001, now + dur);
+
+    o.connect(filter);
+    filter.connect(g);
+    g.connect(audioCtx.destination);
+    o.start(now);
+    o.stop(now + dur + .025);
   }catch(e){}
 }
 
@@ -1258,39 +2571,53 @@ function playCheer(){
     }
     if(audioCtx.state === 'suspended') audioCtx.resume();
 
-    var t0 = audioCtx.currentTime;
+    var t0 = audioCtx.currentTime + .025;
 
-    /*
-      得獎號角設計理念：
-      - 2 個短音 + 1 個拉長音
-      - 音高往上（上行）
-      - 總長約 0.9 秒，不吵但很有「揭曉感」
-    */
-
+    // 可愛校園遊戲「過關」旋律：短、亮、圓潤，不使用外部音效檔
     var notes = [
-      { f: 523, t: 0.00, d: 0.14 }, // C5
-      { f: 659, t: 0.16, d: 0.14 }, // E5
-      { f: 784, t: 0.34, d: 0.55 }  // G5（拉長）
+      {f:659.25,  t:0.00, d:.15, v:.145}, // E5
+      {f:783.99,  t:0.11, d:.17, v:.155}, // G5
+      {f:987.77,  t:0.23, d:.20, v:.165}, // B5
+      {f:1318.51, t:0.40, d:.42, v:.145}  // E6
     ];
 
-    notes.forEach(function(n){
+    notes.forEach(function(n, idx){
       var o = audioCtx.createOscillator();
       var g = audioCtx.createGain();
+      var filter = audioCtx.createBiquadFilter();
 
-      o.type = 'sawtooth';          // 比 sine 更有號角感
-      o.frequency.value = n.f;
+      o.type = idx === notes.length - 1 ? 'triangle' : 'sine';
+      o.frequency.setValueAtTime(n.f, t0 + n.t);
 
-      // 音量包絡：快速進、自然退
-      g.gain.setValueAtTime(0.001, t0 + n.t);
-      g.gain.linearRampToValueAtTime(0.07, t0 + n.t + 0.04);
-      g.gain.exponentialRampToValueAtTime(0.001, t0 + n.t + n.d);
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(3200, t0 + n.t);
+      filter.Q.setValueAtTime(.6, t0 + n.t);
 
-      o.connect(g);
+      g.gain.setValueAtTime(.0001, t0 + n.t);
+      g.gain.exponentialRampToValueAtTime(n.v, t0 + n.t + .012);
+      g.gain.exponentialRampToValueAtTime(.0001, t0 + n.t + n.d);
+
+      o.connect(filter);
+      filter.connect(g);
       g.connect(audioCtx.destination);
-
       o.start(t0 + n.t);
-      o.stop(t0 + n.t + n.d + 0.03);
+      o.stop(t0 + n.t + n.d + .03);
     });
+
+    // 很輕的「星星」尾音
+    var sparkle = audioCtx.createOscillator();
+    var sg = audioCtx.createGain();
+    var st = t0 + .59;
+    sparkle.type = 'sine';
+    sparkle.frequency.setValueAtTime(1760, st);
+    sparkle.frequency.exponentialRampToValueAtTime(2093, st + .18);
+    sg.gain.setValueAtTime(.0001, st);
+    sg.gain.exponentialRampToValueAtTime(.065, st + .01);
+    sg.gain.exponentialRampToValueAtTime(.0001, st + .24);
+    sparkle.connect(sg);
+    sg.connect(audioCtx.destination);
+    sparkle.start(st);
+    sparkle.stop(st + .27);
 
   }catch(e){}
 }
@@ -1584,7 +2911,7 @@ playCheer();
     saveState();
 
     // 主持人模式只保留舞台結果與彩帶，不另外跳出結果視窗
-    if(!document.body.classList.contains('presenter')) openModal(picks, batchNo);
+    /* v1.2.3：結果直接顯示在抽籤卡片，取消抽籤完成後的結果彈窗 */
 
     el.btnDraw.disabled = (pool.length===0);
     el.btnPrint.disabled = (batches.length===0);
@@ -2099,5 +3426,29 @@ el.btnExitP.addEventListener('click', function(){ if(document.body.classList.con
     remaining = [];
   });
 </script>
+
+<script>
+/* v1.2.3 group tool press feedback */
+(function(){
+  function initGroupToolPressFeedback(){
+    ['btnAll','btnNone','btnInvert'].forEach(function(id){
+      var btn = document.getElementById(id);
+      if(!btn) return;
+      function on(){ btn.classList.add('is-active'); }
+      function off(){ btn.classList.remove('is-active'); }
+      btn.addEventListener('pointerdown', on);
+      btn.addEventListener('pointerup', off);
+      btn.addEventListener('pointercancel', off);
+      btn.addEventListener('pointerleave', off);
+    });
+  }
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', initGroupToolPressFeedback);
+  }else{
+    initGroupToolPressFeedback();
+  }
+})();
+</script>
+
 </body>
 </html>
