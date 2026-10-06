@@ -2640,28 +2640,38 @@ function playCheer(){
   }
 
   // JSONP loader
-  function jsonp(url, cbOk, cbFail){
+  function jsonp(url, cbOk, cbFail, timeoutMs){
     var cbName = '__jsonp_cb_' + Date.now() + '_' + Math.floor(Math.random()*1000);
     var s = document.createElement('script');
     var timer = null;
+    var finished = false;
+    var waitMs = Number(timeoutMs) > 0 ? Number(timeoutMs) : 12000;
 
-    window[cbName] = function(resp){
-      cleanup();
-      cbOk(resp);
-    };
     function cleanup(){
       if(timer) clearTimeout(timer);
       try{ delete window[cbName]; }catch(e){ window[cbName]=undefined; }
       if(s && s.parentNode) s.parentNode.removeChild(s);
     }
-    timer = setTimeout(function(){
+    function succeed(resp){
+      if(finished) return;
+      finished = true;
       cleanup();
-      cbFail(new Error('timeout'));
-    }, 12000);
+      cbOk(resp);
+    }
+    function fail(err){
+      if(finished) return;
+      finished = true;
+      cleanup();
+      cbFail(err);
+    }
+
+    window[cbName] = succeed;
+    timer = setTimeout(function(){
+      fail(new Error('timeout'));
+    }, waitMs);
 
     s.onerror = function(){
-      cleanup();
-      cbFail(new Error('network'));
+      fail(new Error('network'));
     };
     s.src = url + (url.indexOf('?')>=0 ? '&' : '?') + 'callback=' + encodeURIComponent(cbName) + '&_=' + Date.now();
     document.head.appendChild(s);
@@ -3229,17 +3239,25 @@ window.addEventListener('resize', function(){
 
         setDiag('名單已就緒 · ' + (meta.total||0) + ' 人', true);
         var sd = document.getElementById('setupDetails'); if(sd) sd.open = false;
-      }, function(){
+      }, function(err){
         el.btnLoad.disabled=false;
         setDiag('名單更新失敗', false);
-        warn('dataAll 連線失敗：請確認網路與 Web App URL');
-      });
+        if(err && err.message === 'timeout'){
+          warn('完整名單讀取逾時（已等待 45 秒）。請稍後再按一次「更新名單」；若持續發生，再檢查 Apps Script 執行紀錄。');
+        }else{
+          warn('完整名單無法連線至 Web App，請確認網路狀態後再試。');
+        }
+      }, 45000);
 
-    }, function(){
+    }, function(err){
       el.btnLoad.disabled=false;
       setDiag('名單更新失敗', false);
-      warn('meta 連線失敗：請確認網路與 Web App URL');
-    });
+      if(err && err.message === 'timeout'){
+        warn('群組資料讀取逾時（已等待 20 秒）。請稍後再試。');
+      }else{
+        warn('群組資料無法連線至 Web App，請確認網路狀態後再試。');
+      }
+    }, 20000);
   }
 
   // ===== Save/Restore =====
